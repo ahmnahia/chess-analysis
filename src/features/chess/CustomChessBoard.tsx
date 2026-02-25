@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Chessboard, PieceDropHandlerArgs } from "react-chessboard";
+import { Chessboard } from "react-chessboard";
 import useChess from "./useChess";
 import "./index.css";
 
@@ -9,8 +8,10 @@ export default function CustomChessBoard() {
     onSquareClick,
     squareStyles,
     onPieceDrop,
-    chessPosition,
+    chessPositions,
     onPieceDrag,
+    currentPosition,
+    arrows,
   } = useChess();
 
   return (
@@ -19,11 +20,12 @@ export default function CustomChessBoard() {
         <div className="max-w-[800px]">
           <Chessboard
             options={{
-              position: chessPosition,
+              position: currentPosition,
               onPieceDrop,
               onSquareClick,
               squareStyles,
               onPieceDrag,
+              arrows,
             }}
           />
         </div>

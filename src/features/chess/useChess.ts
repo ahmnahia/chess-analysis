@@ -7,16 +7,16 @@ import {
   setChessPosition,
 } from "./chessSlice";
 import { SquareHandlerArgs } from "react-chessboard";
-import { setSquareStyles } from "./chessSlice";
-import { Piece, PieceSymbol, Square } from "chess.js";
-import { squareStylesCss } from "./styles";
+import { Square } from "chess.js";
 import { Chess } from "chess.js";
 import {
   filterSquareString,
   handlePossibleMovesClassNames,
-  toggleSquareClassName,
+  getCurrentPosition,
+  syncChessPositionWithCurrent,
 } from "./utils";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
+import useEngine from "@/hooks/useEngine";
 
 // to fix Uncaught TypeError: Do not know how to serialize a BigInt
 declare global {
@@ -30,33 +30,59 @@ BigInt.prototype.toJSON = function () {
 };
 
 export default function useChess() {
-  const { squareStyles, possibleMoves, chessPosition } =
-    useSelector(selectChessState);
+  const {
+    squareStyles,
+    possibleMoves,
+    chessPositions,
+    currentChessPosition,
+    bestmove,
+  } = useSelector(selectChessState);
   const dispatch = useDispatch();
+  const { calculateBestMove } = useEngine();
 
   const chessJsRef = useRef<InstanceType<typeof Chess>>(new Chess());
   const chessJs = chessJsRef.current;
 
+  // State for arrows
+  const [arrows, setArrows] = useState<
+    Array<{ startSquare: string; endSquare: string; color: string }>
+  >([]);
+
+  // Effect to update arrows when best move changes
   useEffect(() => {
-    if (possibleMoves.toSquares.length > 0) {
-      handlePossibleMovesClassNames(possibleMoves.toSquares);
+    if (bestmove && bestmove !== "0000" && bestmove.length >= 4) {
+      const startSquare = bestmove.slice(0, 2);
+      const endSquare = bestmove.slice(2, 4);
+      setArrows([{ startSquare, endSquare, color: "#00ff00" }]);
+    } else {
+      setArrows([]);
     }
-  }, [possibleMoves]);
+  }, [bestmove]);
+  
 
   useEffect(() => {
-    dispatch(setChessPosition(chessJs.fen()));
+    // Initialize with starting position if no positions exist
+    if (chessPositions.length === 0) {
+      dispatch(setChessPosition(chessJs.fen()));
+    }
   }, []);
 
   function onSquareClick(args: SquareHandlerArgs) {
     if (possibleMoves.toSquares.length > 0) {
       for (let i = 0; i < possibleMoves.toSquares.length; i++) {
         if (possibleMoves.toSquares[i].includes(args.square)) {
+          calculateBestMove(chessPositions[chessPositions.length - 1]);
           chessJs.move({
             from: possibleMoves.fromSquare,
             to: filterSquareString(possibleMoves.toSquares[i]),
           });
           // update the position state upon successful move to trigger a re-render of the chessboard
           dispatch(setChessPosition(chessJs.fen()));
+          // syncChessPositionWithCurrent(
+          //   currentChessPosition,
+          //   chessPositions,
+          //   chessJs
+          // );
           return;
         }
       }
@@ -78,25 +104,28 @@ export default function useChess() {
       return false;
     }
 
-    // try to make the move according to chess.js logic
+    // Sync chess.js with current position from Redux
+    // syncChessPositionWithCurrent(currentChessPosition, chessPositions, chessJs);
+
     try {
       chessJs.move({
         from: sourceSquare,
         to: targetSquare,
-        promotion: "q", // always promote to a queen for example simplicity
+        promotion: "q",
       });
 
-      // update the position state upon successful move to trigger a re-render of the chessboard
       dispatch(setChessPosition(chessJs.fen()));
+      calculateBestMove(chessPositions[chessPositions.length - 1]);
 
-      // return true as the move was successful
       return true;
     } catch {
-      // return false as the move was not successful
       return false;
     }
   }
-  const onPieceDrag = ({ square, piece, isSparePiece }: PieceHandlerArgs) => {
+
+  const onPieceDrag = ({ square }: PieceHandlerArgs) => {
+    // syncChessPositionWithCurrent(currentChessPosition, chessPositions, chessJs);
+
     const possibleMoves = chessJs.moves({ square: square as Square });
     dispatch(
       setPossibleMoves({
@@ -106,14 +135,17 @@ export default function useChess() {
     );
   };
 
-  console.log(possibleMoves);
-
   return {
     chessJs,
     onSquareClick,
     squareStyles,
     onPieceDrop,
-    chessPosition,
+    chessPositions,
     onPieceDrag,
+    bestmove,
+    getCurrentPosition: () => getCurrentPosition(chessPositions, chessJs.fen()),
+    currentPosition:
+      currentChessPosition || getCurrentPosition(chessPositions, chessJs.fen()),
+    arrows,
   };
 }

@@ -8,7 +8,7 @@
   position: absolute;
   left: 50% - 20px;
   top: 50% - 20px;
-  z-index: 100;
+  z-index: 10;
 }
 
 .possible-move.can-capture::after {

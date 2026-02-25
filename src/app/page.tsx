@@ -1,4 +1,4 @@
-import ChessHome from "@/features/chess/ChessHome";
+import ChessHome from "@/features/chess";
 declare global {
     interface BigInt {
         toJSON(): Number;
