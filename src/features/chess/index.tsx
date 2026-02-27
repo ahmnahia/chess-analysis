@@ -1,15 +1,22 @@
 "use client";
-import CustomChessBoard from "./CustomChessBoard";
+import CustomChessBoard from "./custom-chess-board";
 import { Provider } from "react-redux";
 import { store } from "@/app/store";
-import SidebarInfo from "./components/sidebarInfo";
+import SidebarInfo from "./components/sidebar-info";
+import { ChessProvider } from "./context/chess-provider";
+import { EvaluationBar } from "./components/evaluation-bar";
+
 export default function ChessHome() {
   return (
     <Provider store={store}>
-      <div className="flex gap-6 w-full justify-center">
-        <CustomChessBoard />
-        <SidebarInfo />
-      </div>
+      <ChessProvider>
+        <div className="flex items-stretch gap-6 w-full justify-center">
+          <EvaluationBar />
+          <CustomChessBoard />
+          <SidebarInfo />
+        </div>
+      </ChessProvider>
     </Provider>
   );
 }
+

@@ -2,36 +2,34 @@
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectChessState,
-  goToPosition,
   clearPositionHistory,
-  setCurrentChessPosition,
-} from "../../chessSlice";
-import UserProfileModal from "../UserProfileModal";
+  setCurrentChessPositionIdx,
+} from "../../chess-slice";
+import UserProfileModal from "../user-profile-modal";
 
 export default function SidebarInfo() {
-  const { bestmove, chessPositions, currentChessPosition } =
+  const { chessPositions, currentChessPositionIdx } =
     useSelector(selectChessState);
   const dispatch = useDispatch();
 
-  // Find current position index
-  const currentIndex = chessPositions.findIndex(
-    (pos) => pos === currentChessPosition
-  );
+  const currentIndex = currentChessPositionIdx;
   const currentMoveNumber =
     currentIndex >= 0 ? currentIndex : chessPositions.length - 1;
+  const activeIndex = currentIndex >= 0 ? currentIndex : chessPositions.length - 1;
+  const bestMove = activeIndex >= 0 ? chessPositions[activeIndex].bestMove : "";
 
   const canGoBack = currentIndex > 0;
   const canGoForward = currentIndex < chessPositions.length - 1;
 
   const handlePrevious = () => {
     if (canGoBack) {
-      dispatch(goToPosition(currentIndex - 1));
+      dispatch(setCurrentChessPositionIdx(currentIndex - 1));
     }
   };
 
   const handleNext = () => {
     if (canGoForward) {
-      dispatch(goToPosition(currentIndex + 1));
+      dispatch(setCurrentChessPositionIdx(currentIndex + 1));
     }
   };
 
@@ -42,7 +40,7 @@ export default function SidebarInfo() {
   const handleGoToLatest = () => {
     if (chessPositions.length > 0) {
       dispatch(
-        setCurrentChessPosition(chessPositions[chessPositions.length - 1])
+        setCurrentChessPositionIdx(chessPositions.length - 1)
       );
     }
   };
@@ -70,7 +68,7 @@ export default function SidebarInfo() {
           <h4 className="font-semibold">Engine Analysis</h4>
           <div className="mt-2 p-3 bg-gray-100 rounded">
             <p className="text-sm text-gray-600">Best Move:</p>
-            <p className="font-mono text-lg">{bestmove || "Calculating..."}</p>
+            <p className="font-mono text-lg">{bestMove || "Calculating..."}</p>
           </div>
         </div>
       </div>

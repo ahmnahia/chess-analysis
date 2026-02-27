@@ -1,6 +1,6 @@
 "use client";
 import { Chessboard } from "react-chessboard";
-import useChess from "./useChess";
+import useChessBoard from "./hooks/use-chess-board";
 import "./index.css";
 
 export default function CustomChessBoard() {
@@ -12,7 +12,7 @@ export default function CustomChessBoard() {
     onPieceDrag,
     currentPosition,
     arrows,
-  } = useChess();
+  } = useChessBoard();
 
   return (
     <div className="" suppressHydrationWarning>

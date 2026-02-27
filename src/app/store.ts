@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import chessSliceReducer from "@/features/chess/chessSlice";
+import chessSliceReducer from "@/features/chess/chess-slice";
 
 export const store = configureStore({
   reducer: {

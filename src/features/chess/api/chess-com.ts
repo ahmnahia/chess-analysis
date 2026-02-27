@@ -1,4 +1,4 @@
-import { ChessComGame, ChessComApiResponse, ChessComGameDetail } from '../types/chessCom';
+import { ChessComGame, ChessComApiResponse, ChessComGameDetail } from '../types/chess-com';
 
 // API configuration
 const CHESS_COM_API_BASE = 'https://api.chess.com/pub';
@@ -34,7 +34,7 @@ export const chessComApi = {
     
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth() + 1; // January is 0
+    const month = now.getMonth() + 1;
     
     const response = await fetch(
       `${CHESS_COM_API_BASE}/player/${username}/games/${year}/${month.toString().padStart(2, '0')}`
@@ -49,7 +49,6 @@ export const chessComApi = {
     
     const data: ChessComApiResponse = await response.json();
     
-    // sort by end_time (latest first) and limit results
     return data.games
       .sort((a, b) => new Date(b.end_time).getTime() - new Date(a.end_time).getTime())
       .slice(0, limit);

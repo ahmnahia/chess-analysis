@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -13,12 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { chessComApi } from "@/services/api/chessComAi";
-import { ChessComGame } from "@/services/types/chessCom";
-import { convertPgnToFens, } from "../../chessSlice";
-import useChess from "../../useChess";
-import { useDispatch } from "react-redux";
+import { chessComApi } from "../../api/chess-com";
+import { ChessComGame } from "../../types/chess-com";
+import { loadPositionsFromApi, setChessPosition } from "../../chess-slice";
 import { pgnToFens } from "../../utils";
+import { useChessContext } from "../../context/chess-provider";
 
 interface UserProfileModalProps {
   onGamesLoaded?: (games: ChessComGame[]) => void;
@@ -28,7 +27,7 @@ export default function UserProfileModal({
   onGamesLoaded,
 }: UserProfileModalProps) {
   const dispatch = useDispatch();
-  const { chessJs } = useChess();
+  const { chessJs, calculateBestMove } = useChessContext();
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +59,7 @@ export default function UserProfileModal({
 
       // Close the modal
       //   setIsOpen(false);
-    //   setUsername("");
+      //   setUsername("");
       setGames(games);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch games");
@@ -120,18 +119,42 @@ export default function UserProfileModal({
         <div>
           {games.length > 0 && <p className="font-bold">Last 10 Games</p>}
           {games.map((game) => {
-            const result = game.white.username === username ? game.white.result : game.black.result;
-            const resultColor = result === "win"  ? "text-green-500" : result === "loss" || result === "checkmated" || result === "timeout" || result === "resigned" ? "text-red-500" : "text-zinc-500";
-            return <div className="underline cursor-pointer" key={game.url}>
-              <button onClick={() => {
-                chessJs.loadPgn(game.pgn);
-                dispatch(convertPgnToFens(pgnToFens(chessJs, game.pgn))); 
-              }}>
-
-                <h3>{game.black.username} - {game.white.username} (<span className={resultColor}>{result}</span>)</h3>
-              </button>
-
-            </div>
+            const result =
+              game.white.username === username
+                ? game.white.result
+                : game.black.result;
+            const resultColor =
+              result === "win"
+                ? "text-green-500"
+                : result === "loss" ||
+                    result === "checkmated" ||
+                    result === "timeout" ||
+                    result === "resigned"
+                  ? "text-red-500"
+                  : "text-zinc-500";
+            return (
+              <div className="underline cursor-pointer" key={game.url}>
+                <button
+                  onClick={() => {
+                    chessJs.loadPgn(game.pgn);
+                    const chessPositions = pgnToFens(chessJs, game.pgn);
+                    // dispatch(loadPositionsFromApi(chessPositions));
+                    chessPositions.forEach((em, idx)=> {
+                      console.log(em.fen);
+                      dispatch(setChessPosition( {fen: em.fen} ));
+                      calculateBestMove(em.fen);
+                    })
+                    if (chessPositions.length > 0) {
+                    }
+                  }}
+                >
+                  <h3>
+                    {game.black.username} - {game.white.username} (
+                    <span className={resultColor}>{result}</span>)
+                  </h3>
+                </button>
+              </div>
+            );
           })}
         </div>
       </DialogContent>

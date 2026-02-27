@@ -1,34 +1,55 @@
-import { chessClassNames } from "./constants";
-import { ChessJs, ChessPositions, PossibleMoves } from "./types";
+import { ChessClassNames } from "./enums";
+import { ChessJs, ChessPositions, PossibleMoves } from "./types/chess-board";
+import { Color } from "chess.js";
 
-export const toggleSquareClassName = (square: string, className: string) => {
+const toggleSquareClassName = (square: string, className: ChessClassNames) => {
   const squareEle = document.querySelector(`div[data-square="${square}"]`);
   squareEle?.classList.contains(className)
     ? squareEle?.classList.remove(className)
     : squareEle?.classList.add(className);
 };
 
-export const handlePossibleMovesClassNames = (possibleMoves: PossibleMoves) => {
-  console.log("possibleMoves", possibleMoves);
+export const handlePossibleMovesClassNames = (
+  possibleMoves: PossibleMoves,
+  turn: Color,
+) => {
+  // console.log("possibleMoves", possibleMoves);
 
   possibleMoves?.toSquares?.forEach((epm) => {
-    const square = filterSquareString(epm);
+    const square = filterSquareString(epm, turn);
     if (epm.includes("x")) {
       // piece can be captured
-      toggleSquareClassName(square, chessClassNames.POSSIBLE_MOVE);
-      toggleSquareClassName(square, chessClassNames.CAN_CAPTURE_PIECE);
+      toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
+      toggleSquareClassName(square, ChessClassNames.CAN_CAPTURE_PIECE);
+    } else if (epm.startsWith("O-O")) {
+      if (epm === "O-O")
+        toggleSquareClassName(
+          square,
+          ChessClassNames.POSSIBLE_MOVE,
+        );
+      if (epm === "O-O-O")
+        toggleSquareClassName(
+          square,
+          ChessClassNames.POSSIBLE_MOVE,
+        );
     } else if (epm.length === 3) {
-      toggleSquareClassName(square, chessClassNames.POSSIBLE_MOVE);
+      toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
     } else {
-      toggleSquareClassName(square, chessClassNames.POSSIBLE_MOVE);
+      toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
     }
   });
 };
 
-export const filterSquareString = (square: string) => {
-  const modifiedSquare = square.replace("#", "").replace("+", "");
+export const getCastleSquare = (move: string, turn: Color) => {
+  if (move === "O-O") return turn === "w" ? "g1" : "g8";
+  else return turn === "w" ? "c1" : "c8";
+};
 
-  if (modifiedSquare.length === 4) {
+export const filterSquareString = (square: string, turn: Color) => {
+  const modifiedSquare = square.replace("#", "").replace("+", "");
+  if(square.startsWith("O-O")) {
+    return getCastleSquare(square, turn);
+  } else if (modifiedSquare.length === 4) {
     return modifiedSquare.slice(2);
   } else if (modifiedSquare.length === 3) {
     return modifiedSquare.slice(1);
@@ -42,17 +63,17 @@ export const calculateBestMove = (engine: Worker, fen: string) => {
 };
 
 export const getCurrentPosition = (
-  chessPositions: string[],
-  defaultFen: string
+  chessPositions: ChessPositions,
+  defaultFen: string,
 ) => {
   return chessPositions.length > 0
-    ? chessPositions[chessPositions.length - 1]
+    ? chessPositions[chessPositions.length - 1].fen
     : defaultFen;
 };
 
 export const syncChessPosition = (
-  chessPositions: string[],
-  chessJs: ChessJs
+  chessPositions: ChessPositions,
+  chessJs: ChessJs,
 ) => {
   const currentFen = getCurrentPosition(chessPositions, chessJs.fen());
   if (chessJs.fen() !== currentFen) {
@@ -61,12 +82,14 @@ export const syncChessPosition = (
 };
 
 export const syncChessPositionWithCurrent = (
-  currentChessPosition: string,
-  chessPositions: string[],
-  chessJs: ChessJs
+  currentChessPositionIdx: number,
+  chessPositions: ChessPositions,
+  chessJs: ChessJs,
 ) => {
   const currentFen =
-    currentChessPosition || getCurrentPosition(chessPositions, chessJs.fen());
+    currentChessPositionIdx >= 0 && currentChessPositionIdx < chessPositions.length
+      ? chessPositions[currentChessPositionIdx].fen
+      : getCurrentPosition(chessPositions, chessJs.fen());
   if (chessJs.fen() !== currentFen) {
     chessJs.load(currentFen);
   }
@@ -74,9 +97,9 @@ export const syncChessPositionWithCurrent = (
 
 export const pgnToFens = (
   chessJs: ChessJs,
-  pgnString: string
+  pgnString: string,
 ): ChessPositions => {
-  const fens: ChessPositions = [];
+  const chessPositions: ChessPositions = [];
 
   try {
     chessJs.loadPgn(pgnString);
@@ -84,15 +107,15 @@ export const pgnToFens = (
     const moves = chessJs.history();
 
     chessJs.reset();
-    fens.push(chessJs.fen());
+    chessPositions.push({ fen: chessJs.fen() });
     for (const move of moves) {
       chessJs.move(move);
-      fens.push(chessJs.fen());
+      chessPositions.push({ fen: chessJs.fen() });
     }
 
-    return fens;
+    return chessPositions;
   } catch (error) {
     console.error("Error parsing PGN:", error);
-    return [];
+    return chessPositions;
   }
 };
