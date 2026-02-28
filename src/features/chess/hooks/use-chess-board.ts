@@ -28,6 +28,9 @@ export default function useChessBoard() {
   } = useSelector(selectChessState);
   const dispatch = useDispatch();
   const { chessJs, calculateBestMove } = useChessContext();
+  const [arrows, setArrows] = useState<
+    Array<{ startSquare: string; endSquare: string; color: string }>
+  >([]);
 
   const effectiveCurrentIdx =
     currentChessPositionIdx >= 0
@@ -39,15 +42,12 @@ export default function useChessBoard() {
       : getCurrentPosition(chessPositions, chessJs.fen());
   const currentPositionData =
     effectiveCurrentIdx >= 0 ? chessPositions[effectiveCurrentIdx] : undefined;
-  const bestMove = currentPositionData?.bestMove ?? "";
-
-  console.log(chessPositions);
-  
-
-  // State for arrows
-  const [arrows, setArrows] = useState<
-    Array<{ startSquare: string; endSquare: string; color: string }>
-  >([]);
+  const arrowSourceIndex =
+    effectiveCurrentIdx > 0 ? effectiveCurrentIdx - 1 : effectiveCurrentIdx;
+  const arrowSourcePosition =
+    arrowSourceIndex >= 0 ? chessPositions[arrowSourceIndex] : undefined;
+  const bestMove =
+    arrowSourcePosition?.bestMove ?? currentPositionData?.bestMove ?? "";
 
   // Effect to update arrows when best move changes
   useEffect(() => {
@@ -71,26 +71,19 @@ export default function useChessBoard() {
     if (possibleMoves.toSquares.length > 0) {
       for (let i = 0; i < possibleMoves.toSquares.length; i++) {
         const turn = chessJs.turn();
+        const nextIndex = chessPositions.length;
         const toSquare = possibleMoves.toSquares[i].startsWith("O-O")
           ? getCastleSquare(possibleMoves.toSquares[i], turn)
           : filterSquareString(possibleMoves.toSquares[i], turn);
         if (toSquare.includes(args.square)) {
-          calculateBestMove(
-            chessPositions[chessPositions.length - 1].fen,
-          );
           chessJs.move({
             from: possibleMoves.fromSquare,
             to: toSquare,
           });
-          // update the position state upon successful move to trigger a re-render of the chessboard
-          dispatch(
-            setChessPosition({ fen: chessJs.fen(), turn: turn }),
-          );
-          // syncChessPositionWithCurrent(
-          //   currentChessPositionIdx,
-          //   chessPositions,
-          //   chessJs
-          // );
+          const nextFen = chessJs.fen();
+          calculateBestMove(nextFen, 15, nextIndex);
+          dispatch(setChessPosition({ fen: nextFen, turn: turn }));
+
           return;
         }
       }
@@ -121,6 +114,7 @@ export default function useChessBoard() {
     // Sync chess.js with current position from Redux
     // syncChessPositionWithCurrent(currentChessPositionIdx, chessPositions, chessJs);
     const turn = chessJs.turn();
+    const nextIndex = chessPositions.length;
     try {
       chessJs.move({
         from: sourceSquare,
@@ -128,8 +122,9 @@ export default function useChessBoard() {
         promotion: "q",
       });
 
-      dispatch(setChessPosition({ fen: chessJs.fen(), turn: turn }));
-      calculateBestMove(chessPositions[chessPositions.length - 1].fen);
+      const nextFen = chessJs.fen();
+      dispatch(setChessPosition({ fen: nextFen, turn: turn }));
+  calculateBestMove(nextFen, 15, nextIndex);
 
       return true;
     } catch {
@@ -160,10 +155,8 @@ export default function useChessBoard() {
     chessPositions,
     onPieceDrag,
     bestMove,
-    getCurrentPosition: () =>
-      getCurrentPosition(chessPositions, chessJs.fen()),
-    currentPosition:
-      effectiveCurrentFen,
+    getCurrentPosition: () => getCurrentPosition(chessPositions, chessJs.fen()),
+    currentPosition: effectiveCurrentFen,
     arrows,
   };
 }

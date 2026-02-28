@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { chessComApi } from "../../api/chess-com";
 import { ChessComGame } from "../../types/chess-com";
-import { loadPositionsFromApi, setChessPosition } from "../../chess-slice";
+import { loadPositionsFromApi } from "../../chess-slice";
 import { pgnToFens } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
 
@@ -27,7 +27,7 @@ export default function UserProfileModal({
   onGamesLoaded,
 }: UserProfileModalProps) {
   const dispatch = useDispatch();
-  const { chessJs, calculateBestMove } = useChessContext();
+  const { chessJs, calculateBestMovesForPositions } = useChessContext();
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,17 +135,12 @@ export default function UserProfileModal({
             return (
               <div className="underline cursor-pointer" key={game.url}>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     chessJs.loadPgn(game.pgn);
-                    const chessPositions = pgnToFens(chessJs, game.pgn);
-                    // dispatch(loadPositionsFromApi(chessPositions));
-                    chessPositions.forEach((em, idx)=> {
-                      console.log(em.fen);
-                      dispatch(setChessPosition( {fen: em.fen} ));
-                      calculateBestMove(em.fen);
-                    })
-                    if (chessPositions.length > 0) {
-                    }
+                    const fens = pgnToFens(chessJs, game.pgn);
+                    const chessPositions = fens.map((fen) => ({ fen, isCalculatingBestMove: true }));
+                    dispatch(loadPositionsFromApi(chessPositions));
+                    await calculateBestMovesForPositions(chessPositions);
                   }}
                 >
                   <h3>

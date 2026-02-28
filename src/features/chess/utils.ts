@@ -98,8 +98,8 @@ export const syncChessPositionWithCurrent = (
 export const pgnToFens = (
   chessJs: ChessJs,
   pgnString: string,
-): ChessPositions => {
-  const chessPositions: ChessPositions = [];
+): string[] => {
+  const fens: string[] = [];
 
   try {
     chessJs.loadPgn(pgnString);
@@ -107,15 +107,15 @@ export const pgnToFens = (
     const moves = chessJs.history();
 
     chessJs.reset();
-    chessPositions.push({ fen: chessJs.fen() });
+    fens.push(chessJs.fen());
     for (const move of moves) {
       chessJs.move(move);
-      chessPositions.push({ fen: chessJs.fen() });
+      fens.push(chessJs.fen());
     }
 
-    return chessPositions;
+    return fens;
   } catch (error) {
     console.error("Error parsing PGN:", error);
-    return chessPositions;
+    return fens;
   }
 };

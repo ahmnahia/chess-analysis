@@ -6,7 +6,7 @@ export type SquareStyles = Record<string, React.CSSProperties>;
 
 export type PossibleMoves = { fromSquare: string; toSquares: string[] };
 
-export type ChessPosition = { fen: string; bestMove?: string };
+export type ChessPosition = { fen: string; bestMove?: string, evaluation?: number, isCalculatingBestMove: boolean };
 
 export type ChessPositions = ChessPosition[];
 

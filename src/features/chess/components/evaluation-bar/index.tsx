@@ -4,8 +4,12 @@ import { useSelector } from "react-redux";
 import { selectChessState } from "../../chess-slice";
 
 export const EvaluationBar = () => {
-  const { evaluation } = useSelector(selectChessState);
-  const whiteEvaluation = evaluation;
+  const { chessPositions, currentChessPositionIdx } =
+    useSelector(selectChessState);
+  const whiteEvaluation =
+    currentChessPositionIdx > 0
+      ? chessPositions[currentChessPositionIdx].evaluation ? chessPositions[currentChessPositionIdx].evaluation : chessPositions[currentChessPositionIdx - 1].evaluation ?? 0
+      : 0;
 
   const sigmoid = (value: number) => 1 / (1 + Math.exp(-0.7 * value));
   const rawWhiteShare = sigmoid(whiteEvaluation);

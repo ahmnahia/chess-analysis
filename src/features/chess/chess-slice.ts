@@ -42,7 +42,7 @@ const chessSlice = createSlice({
       state,
       action: PayloadAction<{ fen: string; turn?: Color }>,
     ) => {
-      state.chessPositions.push({ fen: action.payload.fen });
+      state.chessPositions.push({ fen: action.payload.fen, isCalculatingBestMove: true });
       state.currentChessPositionIdx = state.chessPositions.length - 1;
 
       //clear old possible moves
@@ -52,11 +52,26 @@ const chessSlice = createSlice({
         state.possibleMoves = { fromSquare: "", toSquares: [] };
       }
     },
-    setBestMove: (state, action: PayloadAction<string>) => {
-      if (state.chessPositions.length > 0) {
-        state.chessPositions[state.chessPositions.length - 1].bestMove =
-          action.payload;
-      }
+    setBestMove: (
+      state,
+      action: PayloadAction<{
+        bestMove: string;
+        evaluation: number;
+        index?: number;
+      }>,
+    ) => {
+      if (state.chessPositions.length === 0) return;
+
+      const targetIndex =
+        typeof action.payload.index === "number"
+          ? action.payload.index
+          : state.chessPositions.length - 1;
+
+      if (targetIndex < 0 || targetIndex >= state.chessPositions.length) return;
+
+      state.chessPositions[targetIndex].bestMove = action.payload.bestMove;
+      state.chessPositions[targetIndex].evaluation = action.payload.evaluation;
+      state.chessPositions[targetIndex].isCalculatingBestMove = false;
     },
     clearPositionHistory: (state) => {
       state.chessPositions = [];
@@ -72,9 +87,6 @@ const chessSlice = createSlice({
       state.chessPositions = action.payload;
       state.currentChessPositionIdx = action.payload.length > 0 ? 0 : -1;
     },
-    setEvaluation: (state, action: PayloadAction<number>) => {
-      state.evaluation = action.payload;
-    },
   },
 });
 
@@ -86,7 +98,6 @@ export const {
   clearPositionHistory,
   setCurrentChessPositionIdx,
   loadPositionsFromApi,
-  setEvaluation,
 } = chessSlice.actions;
 
 export default chessSlice.reducer;
