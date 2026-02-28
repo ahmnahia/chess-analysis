@@ -6,15 +6,21 @@ export type SquareStyles = Record<string, React.CSSProperties>;
 
 export type PossibleMoves = { fromSquare: string; toSquares: string[] };
 
-export type ChessPosition = { fen: string; bestMove?: string, evaluation?: number, isCalculatingBestMove: boolean };
+export type ChessPosition = {
+  fen: string;
+  bestMove?: string;
+  evaluation?: number;
+  isCalculatingBestMove: boolean;
+};
 
 export type ChessPositions = ChessPosition[];
 
-export interface ChessState {
-	squareStyles: Record<string, React.CSSProperties>;
-	possibleMoves: PossibleMoves;
-	chessPositions: ChessPositions;
-	currentChessPositionIdx: number;
-	evaluation: number;
-}
+export type Arrow = { startSquare: string; endSquare: string; color: string };
 
+export interface ChessState {
+  squareStyles: Record<string, React.CSSProperties>;
+  possibleMoves: PossibleMoves;
+  chessPositions: ChessPositions;
+  currentChessPositionIdx: number;
+  evaluation: number;
+}

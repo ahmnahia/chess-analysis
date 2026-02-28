@@ -30,7 +30,6 @@ const chessSlice = createSlice({
       action: PayloadAction<{ possibleMoves: PossibleMoves; turn: Color }>,
     ) => {
       if (state.possibleMoves.toSquares.length > 0) {
-        // clear the old possible moves cuz a new piece is selected
         handlePossibleMovesClassNames(state.possibleMoves, action.payload.turn);
       }
       state.possibleMoves = JSON.parse(
@@ -47,7 +46,6 @@ const chessSlice = createSlice({
 
       //clear old possible moves
       if (action.payload.turn && state.possibleMoves.toSquares.length > 0) {
-        // clear the old possible moves cuz a new piece is selected
         handlePossibleMovesClassNames(state.possibleMoves, action.payload.turn);
         state.possibleMoves = { fromSquare: "", toSquares: [] };
       }

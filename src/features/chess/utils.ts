@@ -1,5 +1,5 @@
 import { ChessClassNames } from "./enums";
-import { ChessJs, ChessPositions, PossibleMoves } from "./types/chess-board";
+import { ChessJs, PossibleMoves } from "./types/chess-board";
 import { Color } from "chess.js";
 
 const toggleSquareClassName = (square: string, className: ChessClassNames) => {
@@ -13,25 +13,20 @@ export const handlePossibleMovesClassNames = (
   possibleMoves: PossibleMoves,
   turn: Color,
 ) => {
-  // console.log("possibleMoves", possibleMoves);
+  const filteredPossibleMoves = filterPossibleToSquaresMoves(possibleMoves);
 
-  possibleMoves?.toSquares?.forEach((epm) => {
+  filteredPossibleMoves?.toSquares?.forEach((epm) => {
     const square = filterSquareString(epm, turn);
     if (epm.includes("x")) {
       // piece can be captured
       toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
       toggleSquareClassName(square, ChessClassNames.CAN_CAPTURE_PIECE);
     } else if (epm.startsWith("O-O")) {
+      // castling
       if (epm === "O-O")
-        toggleSquareClassName(
-          square,
-          ChessClassNames.POSSIBLE_MOVE,
-        );
+        toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
       if (epm === "O-O-O")
-        toggleSquareClassName(
-          square,
-          ChessClassNames.POSSIBLE_MOVE,
-        );
+        toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
     } else if (epm.length === 3) {
       toggleSquareClassName(square, ChessClassNames.POSSIBLE_MOVE);
     } else {
@@ -47,8 +42,14 @@ export const getCastleSquare = (move: string, turn: Color) => {
 
 export const filterSquareString = (square: string, turn: Color) => {
   const modifiedSquare = square.replace("#", "").replace("+", "");
-  if(square.startsWith("O-O")) {
+  console.log("modified square: ", modifiedSquare);
+
+  if (modifiedSquare.startsWith("O-O")) {
     return getCastleSquare(square, turn);
+  } else if (modifiedSquare.includes("=")) {
+    const newSquare = modifiedSquare.split("=")[0].slice(2);
+    console.log("new square after handling promotion: ", newSquare);
+    return newSquare;
   } else if (modifiedSquare.length === 4) {
     return modifiedSquare.slice(2);
   } else if (modifiedSquare.length === 3) {
@@ -62,43 +63,7 @@ export const calculateBestMove = (engine: Worker, fen: string) => {
   engine?.postMessage("go depth 15");
 };
 
-export const getCurrentPosition = (
-  chessPositions: ChessPositions,
-  defaultFen: string,
-) => {
-  return chessPositions.length > 0
-    ? chessPositions[chessPositions.length - 1].fen
-    : defaultFen;
-};
-
-export const syncChessPosition = (
-  chessPositions: ChessPositions,
-  chessJs: ChessJs,
-) => {
-  const currentFen = getCurrentPosition(chessPositions, chessJs.fen());
-  if (chessJs.fen() !== currentFen) {
-    chessJs.load(currentFen);
-  }
-};
-
-export const syncChessPositionWithCurrent = (
-  currentChessPositionIdx: number,
-  chessPositions: ChessPositions,
-  chessJs: ChessJs,
-) => {
-  const currentFen =
-    currentChessPositionIdx >= 0 && currentChessPositionIdx < chessPositions.length
-      ? chessPositions[currentChessPositionIdx].fen
-      : getCurrentPosition(chessPositions, chessJs.fen());
-  if (chessJs.fen() !== currentFen) {
-    chessJs.load(currentFen);
-  }
-};
-
-export const pgnToFens = (
-  chessJs: ChessJs,
-  pgnString: string,
-): string[] => {
+export const pgnToFens = (chessJs: ChessJs, pgnString: string): string[] => {
   const fens: string[] = [];
 
   try {
@@ -118,4 +83,25 @@ export const pgnToFens = (
     console.error("Error parsing PGN:", error);
     return fens;
   }
+};
+
+const filterPossibleToSquaresMoves = (
+  possibleMoves: PossibleMoves,
+): PossibleMoves => {
+  const newToSquares: string[] = [];
+  const uniqueToSquares: Record<string, boolean> = {};
+  possibleMoves.toSquares.forEach((move) => {
+    if (move.includes("8=")) {
+      const toSquare = move.split("=")[0];
+      if (!uniqueToSquares[toSquare]) {
+        uniqueToSquares[toSquare] = true;
+        newToSquares.push(toSquare);
+      }
+    } else {
+      newToSquares.push(move);
+    }
+  });
+
+  const newPossibleMoves = { ...possibleMoves, toSquares: newToSquares };
+  return newPossibleMoves;
 };
