@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { Chess, Color } from "chess.js";
 
 export type ChessJs = InstanceType<typeof Chess>;
 
@@ -6,11 +6,11 @@ export type SquareStyles = Record<string, React.CSSProperties>;
 
 export type PossibleMoves = { fromSquare: string; toSquares: string[] };
 
-export type ChessPosition = {
-  fen: string;
-  bestMove?: string;
-  evaluation?: number;
-  isCalculatingBestMove: boolean;
+export type MovePlayed = { fromSquare: string; toSquare: string };
+
+export type EvaluationView = {
+  whiteValue: number;
+  whiteShare: number;
 };
 
 export type ChessPositions = ChessPosition[];
@@ -22,5 +22,26 @@ export interface ChessState {
   possibleMoves: PossibleMoves;
   chessPositions: ChessPositions;
   currentChessPositionIdx: number;
-  evaluation: number;
 }
+
+export type MoveClassification =
+  | "forced"
+  | "inaccuracy"
+  | "mistake"
+  | "blunder"
+  | "great"
+  | "good"
+  | "excellent"
+  | "best";
+
+export type ChessPosition = {
+  fen: string;
+  movePlayed?: MovePlayed;
+  bestMove?: string;
+  moveClassification?: MoveClassification;
+  evaluationView?: EvaluationView;
+  isCalculatingBestMove: boolean;
+  isCheck?: boolean;
+  currentTurn: Color;
+  movedToSquare: string;
+};

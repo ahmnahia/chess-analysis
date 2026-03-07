@@ -8,7 +8,6 @@ export default function CustomChessBoard() {
     onSquareClick,
     squareStyles,
     onPieceDrop,
-    chessPositions,
     onPieceDrag,
     currentPosition,
     arrows,

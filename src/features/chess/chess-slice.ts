@@ -6,16 +6,16 @@ import {
   PossibleMoves,
   ChessPositions,
   ChessState,
+  EvaluationView,
 } from "./types/chess-board";
-import { handlePossibleMovesClassNames } from "./utils";
 import { Color } from "chess.js";
+import { getMoveClassification } from "./utils";
 
 const initialState: ChessState = {
   squareStyles: {},
   possibleMoves: { fromSquare: "", toSquares: [] },
   chessPositions: [],
   currentChessPositionIdx: -1,
-  evaluation: 0,
 };
 
 const chessSlice = createSlice({
@@ -29,47 +29,63 @@ const chessSlice = createSlice({
       state,
       action: PayloadAction<{ possibleMoves: PossibleMoves; turn: Color }>,
     ) => {
-      if (state.possibleMoves.toSquares.length > 0) {
-        handlePossibleMovesClassNames(state.possibleMoves, action.payload.turn);
-      }
       state.possibleMoves = JSON.parse(
         JSON.stringify(action.payload.possibleMoves),
       );
-      handlePossibleMovesClassNames(state.possibleMoves, action.payload.turn);
     },
     setChessPosition: (
       state,
-      action: PayloadAction<{ fen: string; turn?: Color }>,
+      action: PayloadAction<{
+        fen: string;
+        movedToSquare: string;
+        turnBeforeMove?: Color;
+        isCheck?: boolean;
+      }>,
     ) => {
-      state.chessPositions.push({ fen: action.payload.fen, isCalculatingBestMove: true });
+      state.chessPositions.push({
+        fen: action.payload.fen,
+        isCalculatingBestMove: true,
+        isCheck: action.payload.isCheck,
+        currentTurn: action.payload.turnBeforeMove === "w" ? "b" : "w",
+        movedToSquare: action.payload.movedToSquare,
+      });
       state.currentChessPositionIdx = state.chessPositions.length - 1;
-
-      //clear old possible moves
-      if (action.payload.turn && state.possibleMoves.toSquares.length > 0) {
-        handlePossibleMovesClassNames(state.possibleMoves, action.payload.turn);
-        state.possibleMoves = { fromSquare: "", toSquares: [] };
-      }
+      state.possibleMoves = { fromSquare: "", toSquares: [] };
     },
     setBestMove: (
       state,
       action: PayloadAction<{
         bestMove: string;
-        evaluation: number;
+        evaluationView: EvaluationView;
         index?: number;
+        legalMovesCount?: number;
       }>,
     ) => {
       if (state.chessPositions.length === 0) return;
 
-      const targetIndex =
-        typeof action.payload.index === "number"
-          ? action.payload.index
-          : state.chessPositions.length - 1;
+      const targetIndex = action.payload.index
+        ? action.payload.index
+        : state.chessPositions.length - 1;
 
       if (targetIndex < 0 || targetIndex >= state.chessPositions.length) return;
 
       state.chessPositions[targetIndex].bestMove = action.payload.bestMove;
-      state.chessPositions[targetIndex].evaluation = action.payload.evaluation;
+      state.chessPositions[targetIndex].evaluationView =
+        action.payload.evaluationView;
       state.chessPositions[targetIndex].isCalculatingBestMove = false;
+      const previousPosition = state.chessPositions[targetIndex - 1];
+      const sideToMoveAfterPosition =
+        state.chessPositions[targetIndex].currentTurn;
+      const playedBy: Color = sideToMoveAfterPosition === "w" ? "b" : "w";
+      state.chessPositions[targetIndex].moveClassification =
+        getMoveClassification(
+          state.chessPositions[targetIndex].movedToSquare || "",
+          action.payload.evaluationView.whiteValue,
+          previousPosition?.evaluationView?.whiteValue || 0,
+          previousPosition?.bestMove || "",
+          action.payload.legalMovesCount || 0,
+          playedBy,
+        );
     },
     clearPositionHistory: (state) => {
       state.chessPositions = [];

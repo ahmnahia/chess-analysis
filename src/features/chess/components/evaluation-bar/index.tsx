@@ -6,25 +6,30 @@ import { selectChessState } from "../../chess-slice";
 export const EvaluationBar = () => {
   const { chessPositions, currentChessPositionIdx } =
     useSelector(selectChessState);
-  const whiteEvaluation =
-    currentChessPositionIdx > 0
-      ? chessPositions[currentChessPositionIdx].evaluation ? chessPositions[currentChessPositionIdx].evaluation : chessPositions[currentChessPositionIdx - 1].evaluation ?? 0
-      : 0;
 
-  const sigmoid = (value: number) => 1 / (1 + Math.exp(-0.7 * value));
-  const rawWhiteShare = sigmoid(whiteEvaluation);
-  const whiteShare = Math.min(0.98, Math.max(0.02, rawWhiteShare));
-  const blackShare = 1 - whiteShare;
-
-  const formatEval = (value: number) => {
+  const formatEvaluation = (value: number): string => {
     if (Math.abs(value) >= 99) {
       return value > 0 ? "+M" : "-M";
     }
 
     const rounded = Math.round(value * 10) / 10;
-    const signed = rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1);
-    return signed;
+    return rounded > 0 ? `+${rounded.toFixed(1)}` : rounded.toFixed(1);
   };
+
+  const evaluationView =
+    currentChessPositionIdx <= 0
+      ? {
+          whiteValue: 0,
+          whiteShare: 0.5,
+        }
+      : (chessPositions[currentChessPositionIdx]?.evaluationView ??
+          chessPositions[currentChessPositionIdx - 1]?.evaluationView ?? {
+            whiteValue: 0,
+            whiteShare: 0.5,
+          });
+
+  const blackValue = -evaluationView.whiteValue;
+  const blackShare = 1 - evaluationView.whiteShare;
 
   return (
     <div className="self-stretch my-2 w-10 min-w-10 rounded-md border border-border overflow-hidden flex flex-col">
@@ -32,13 +37,13 @@ export const EvaluationBar = () => {
         className="bg-black text-white flex items-start justify-center pt-1 text-xs font-semibold transition-all duration-300"
         style={{ flexGrow: blackShare }}
       >
-        <span>{formatEval(-whiteEvaluation)}</span>
+        <span>{formatEvaluation(blackValue)}</span>
       </div>
       <div
         className="bg-white text-black flex items-end justify-center pb-1 text-xs font-semibold transition-all duration-300"
-        style={{ flexGrow: whiteShare }}
+        style={{ flexGrow: evaluationView.whiteShare }}
       >
-        <span>{formatEval(whiteEvaluation)}</span>
+        <span>{formatEvaluation(evaluationView.whiteValue)}</span>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { ChessContextValue } from "../types/context";
 import { setBestMove } from "../chess-slice";
 import { ChessPositions } from "../types/chess-board";
+import { getEvaluationDataFromEngineInfo } from "../utils";
 
 const ChessContext = createContext<ChessContextValue | null>(null);
 
@@ -25,46 +26,41 @@ export function ChessProvider({ children }: { children: ReactNode }) {
   const sideToMoveRef = useRef<"w" | "b">("w");
   const pendingResolverRef = useRef<(() => void) | null>(null);
   const pendingTargetIndexRef = useRef<number | null>(null);
-  const latestEvaluationRef = useRef(0);
+  const latestEvaluationViewRef = useRef({
+    whiteValue: 0,
+    whiteShare: 0.5,
+  });
 
   useEffect(() => {
+    if (!dispatch) return;
+
     const worker = new Worker("/stockfish-nnue-16-single.js");
 
     worker.onmessage = (e) => {
       const message = e.data;
-      
-      if (message.startsWith("info") && message.includes("score")) {
-        const match = message.match(/score (cp|mate) (-?\d+)/);
 
-        if (match) {
-          const type = match[1];
-          const value = parseInt(match[2], 10);
+      const evaluationData = getEvaluationDataFromEngineInfo(
+        message,
+        sideToMoveRef.current,
+      );
 
-
-          if (type === "cp") {
-            latestEvaluationRef.current = value / 100;
-          } else {
-            latestEvaluationRef.current = value > 0 ? 100 : -100;
-          }
-
-          latestEvaluationRef.current =
-            sideToMoveRef.current === "w" ? latestEvaluationRef.current : -latestEvaluationRef.current;
-        }
+      if (evaluationData !== null) {
+        latestEvaluationViewRef.current = evaluationData;
       }
 
       if (message.startsWith("bestmove")) {
         const bestMove = message.split(" ")[1];
 
+        const movesCount = chessJsRef.current.moves().length;
         if (pendingTargetIndexRef.current !== null) {
           dispatch(
             setBestMove({
               index: pendingTargetIndexRef.current,
               bestMove,
-              evaluation: latestEvaluationRef.current,
+              evaluationView: latestEvaluationViewRef.current,
+              legalMovesCount: movesCount,
             }),
           );
-        } else {
-          dispatch(setBestMove({bestMove, evaluation: latestEvaluationRef.current}));
         }
 
         if (pendingResolverRef.current) {
@@ -92,7 +88,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
     async (
       fen: string,
       depth: number = 15,
-      targetIndex?: number,
+      targetIndex: number,
     ): Promise<void> => {
       if (!engine) return;
 
@@ -111,12 +107,14 @@ export function ChessProvider({ children }: { children: ReactNode }) {
 
       const fenParts = fen.trim().split(/\s+/);
       sideToMoveRef.current = fenParts[1] === "b" ? "b" : "w";
-      latestEvaluationRef.current = 0;
+      latestEvaluationViewRef.current = {
+        whiteValue: 0,
+        whiteShare: 0.5,
+      };
 
       return new Promise<void>((resolve) => {
         pendingResolverRef.current = resolve;
-        pendingTargetIndexRef.current =
-          typeof targetIndex === "number" ? targetIndex : null;
+        pendingTargetIndexRef.current = targetIndex;
         isCalculatingRef.current = true;
         engine.postMessage(`position fen ${fen}`);
         engine.postMessage(`go depth ${depth}`);
@@ -126,7 +124,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
   );
 
   const calculateBestMove = useCallback(
-    (fen: string, depth: number = 15, targetIndex?: number) => {
+    (fen: string, targetIndex: number, depth: number = 15) => {
       void runBestMoveAnalysis(fen, depth, targetIndex);
     },
     [runBestMoveAnalysis],

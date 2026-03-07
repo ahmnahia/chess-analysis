@@ -1,5 +1,9 @@
 import { ChessClassNames } from "./enums";
-import { ChessJs, PossibleMoves } from "./types/chess-board";
+import {
+  ChessJs,
+  MoveClassification,
+  PossibleMoves,
+} from "./types/chess-board";
 import { Color } from "chess.js";
 
 const toggleSquareClassName = (square: string, className: ChessClassNames) => {
@@ -14,7 +18,6 @@ export const handlePossibleMovesClassNames = (
   turn: Color,
 ) => {
   const filteredPossibleMoves = filterPossibleToSquaresMoves(possibleMoves);
-
   filteredPossibleMoves?.toSquares?.forEach((epm) => {
     const square = filterSquareString(epm, turn);
     if (epm.includes("x")) {
@@ -42,14 +45,11 @@ export const getCastleSquare = (move: string, turn: Color) => {
 
 export const filterSquareString = (square: string, turn: Color) => {
   const modifiedSquare = square.replace("#", "").replace("+", "");
-  console.log("modified square: ", modifiedSquare);
 
   if (modifiedSquare.startsWith("O-O")) {
     return getCastleSquare(square, turn);
   } else if (modifiedSquare.includes("=")) {
-    const newSquare = modifiedSquare.split("=")[0].slice(2);
-    console.log("new square after handling promotion: ", newSquare);
-    return newSquare;
+    return modifiedSquare.split("=")[0].slice(2);
   } else if (modifiedSquare.length === 4) {
     return modifiedSquare.slice(2);
   } else if (modifiedSquare.length === 3) {
@@ -58,9 +58,34 @@ export const filterSquareString = (square: string, turn: Color) => {
   return modifiedSquare;
 };
 
-export const calculateBestMove = (engine: Worker, fen: string) => {
-  engine?.postMessage("position fen " + fen);
-  engine?.postMessage("go depth 15");
+export const getEvaluationDataFromEngineInfo = (
+  infoMessage: string,
+  sideToMove: Color,
+): {
+  whiteValue: number;
+  whiteShare: number;
+} | null => {
+  if (!infoMessage.startsWith("info") || !infoMessage.includes("score")) {
+    return null;
+  }
+
+  const match = infoMessage.match(/score (cp|mate) (-?\d+)/);
+  if (!match) return null;
+
+  const type = match[1];
+  const value = parseInt(match[2], 10);
+
+  const scoreForSideToMove = type === "cp" ? value / 100 : value > 0 ? 100 : -100;
+  const whiteValue = sideToMove === "w" ? scoreForSideToMove : -scoreForSideToMove;
+
+  const sigmoid = (input: number) => 1 / (1 + Math.exp(-0.7 * input));
+  const rawWhiteShare = sigmoid(whiteValue);
+  const whiteShare = Math.min(0.98, Math.max(0.02, rawWhiteShare));
+
+  return {
+    whiteValue,
+    whiteShare,
+  };
 };
 
 export const pgnToFens = (chessJs: ChessJs, pgnString: string): string[] => {
@@ -85,13 +110,13 @@ export const pgnToFens = (chessJs: ChessJs, pgnString: string): string[] => {
   }
 };
 
-const filterPossibleToSquaresMoves = (
+export const filterPossibleToSquaresMoves = (
   possibleMoves: PossibleMoves,
 ): PossibleMoves => {
   const newToSquares: string[] = [];
   const uniqueToSquares: Record<string, boolean> = {};
   possibleMoves.toSquares.forEach((move) => {
-    if (move.includes("8=")) {
+    if (move.includes("8=") || move.includes("1=")) {
       const toSquare = move.split("=")[0];
       if (!uniqueToSquares[toSquare]) {
         uniqueToSquares[toSquare] = true;
@@ -104,4 +129,34 @@ const filterPossibleToSquaresMoves = (
 
   const newPossibleMoves = { ...possibleMoves, toSquares: newToSquares };
   return newPossibleMoves;
+};
+
+export const getMoveClassification = (
+  playedMove: string,
+  currentEval: number,
+  previousEval: number,
+  bestMove: string,
+  legalMovesCount: number,
+  playedBy: Color,
+): MoveClassification => {
+  const normalizedPlayedMove = playedMove.trim().toLowerCase();
+  const normalizedBestMove = bestMove.trim().toLowerCase();
+
+  if (legalMovesCount === 1) return "forced";
+
+  if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
+    return "best";
+  }
+
+  const lossInPawns =
+    playedBy === "w"
+      ? previousEval - currentEval
+      : currentEval - previousEval;
+
+  if (lossInPawns > 2.5) return "blunder";
+  if (lossInPawns > 1.0) return "mistake";
+  if (lossInPawns > 0.5) return "inaccuracy";
+  if (lossInPawns < -1.0) return "great";
+  if (lossInPawns > 0.1) return "good";
+  return "excellent";
 };

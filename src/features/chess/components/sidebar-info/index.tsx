@@ -12,24 +12,24 @@ export default function SidebarInfo() {
     useSelector(selectChessState);
   const dispatch = useDispatch();
 
-  const currentIndex = currentChessPositionIdx;
   const currentMoveNumber =
-    currentIndex >= 0 ? currentIndex : chessPositions.length - 1;
-  const activeIndex = currentIndex >= 0 ? currentIndex : chessPositions.length - 1;
-  const bestMove = activeIndex >= 0 ? chessPositions[activeIndex].bestMove : "";
+    currentChessPositionIdx >= 0
+      ? currentChessPositionIdx
+      : chessPositions.length - 1;
+  const bestMove = currentChessPositionIdx >= 0 ? chessPositions[currentChessPositionIdx].bestMove : "";
 
-  const canGoBack = currentIndex > 0;
-  const canGoForward = currentIndex < chessPositions.length - 1;
+  const canGoBack = currentChessPositionIdx > 0;
+  const canGoForward = currentChessPositionIdx < chessPositions.length - 1;
 
   const handlePrevious = () => {
     if (canGoBack) {
-      dispatch(setCurrentChessPositionIdx(currentIndex - 1));
+      dispatch(setCurrentChessPositionIdx(currentChessPositionIdx - 1));
     }
   };
 
   const handleNext = () => {
     if (canGoForward) {
-      dispatch(setCurrentChessPositionIdx(currentIndex + 1));
+      dispatch(setCurrentChessPositionIdx(currentChessPositionIdx + 1));
     }
   };
 
@@ -39,9 +39,7 @@ export default function SidebarInfo() {
 
   const handleGoToLatest = () => {
     if (chessPositions.length > 0) {
-      dispatch(
-        setCurrentChessPositionIdx(chessPositions.length - 1)
-      );
+      dispatch(setCurrentChessPositionIdx(chessPositions.length - 1));
     }
   };
 
@@ -60,7 +58,9 @@ export default function SidebarInfo() {
             <p className="font-mono text-lg">{chessPositions.length}</p>
             <p className="text-sm text-gray-600">Position Index:</p>
             <p className="font-mono text-lg">
-              {currentIndex >= 0 ? currentIndex : "Latest"}
+              {currentChessPositionIdx >= 0
+                ? currentChessPositionIdx
+                : "Latest"}
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function SidebarInfo() {
         <div className="flex gap-2">
           <button
             onClick={handleGoToLatest}
-            disabled={currentIndex === chessPositions.length - 1}
+            disabled={currentChessPositionIdx === chessPositions.length - 1}
             className="px-3 py-2 bg-green-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Latest

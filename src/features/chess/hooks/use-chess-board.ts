@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
 import {
@@ -8,14 +8,15 @@ import {
   setChessPosition,
 } from "../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
-import { Square } from "chess.js";
+import { Square, Color } from "chess.js";
 import {
   filterSquareString,
-  handlePossibleMovesClassNames,
   getCastleSquare,
+  filterPossibleToSquaresMoves,
+  handlePossibleMovesClassNames,
 } from "../utils";
 import { useChessContext } from "../context/chess-provider";
-import { Arrow } from "../types/chess-board";
+import { Arrow, PossibleMoves } from "../types/chess-board";
 import "@/lib/bigintToJson";
 
 export default function useChessBoard() {
@@ -28,6 +29,11 @@ export default function useChessBoard() {
   const dispatch = useDispatch();
   const { chessJs, engine, calculateBestMove } = useChessContext();
   const [arrows, setArrows] = useState<Arrow[]>([]);
+  const previousPossibleMovesRef = useRef<PossibleMoves>({
+    fromSquare: "",
+    toSquares: [],
+  });
+  const previousTurnRef = useRef<Color>("w");
 
   const effectiveCurrentFen = chessPositions[currentChessPositionIdx]?.fen;
   const previousPositionData =
@@ -52,39 +58,81 @@ export default function useChessBoard() {
     // initialize with starting position if no positions exist
     if (chessPositions.length === 0) {
       const initialFen = chessJs.fen();
-      dispatch(setChessPosition({ fen: initialFen, turn: chessJs.turn() }));
-      calculateBestMove(initialFen, 15, 0);
+      dispatch(
+        setChessPosition({
+          fen: initialFen,
+          turnBeforeMove: chessJs.turn(),
+          movedToSquare: "",
+        }),
+      );
+      calculateBestMove(initialFen, 0, 15);
     }
   }, []);
 
   useEffect(() => {
-    if (!engine) return;
-    if (chessPositions.length === 0) return;
+    const previousPossibleMoves = previousPossibleMovesRef.current;
 
-    const firstPosition = chessPositions[0];
-    if (!firstPosition.bestMove) {
-      calculateBestMove(firstPosition.fen, 15, 0);
+    if (previousPossibleMoves.toSquares.length > 0) {
+      handlePossibleMovesClassNames(
+        previousPossibleMoves,
+        previousTurnRef.current,
+      );
     }
-  }, [engine, chessPositions, calculateBestMove]);
+
+    if (possibleMoves.toSquares.length > 0) {
+      const currentTurn = chessJs.turn();
+      handlePossibleMovesClassNames(possibleMoves, currentTurn);
+    }
+    previousTurnRef.current = chessJs.turn();
+
+    previousPossibleMovesRef.current = JSON.parse(
+      JSON.stringify(possibleMoves),
+    );
+  }, [possibleMoves, chessJs]);
+
+  const applyMoveAndAnalyze = (
+    from: string,
+    to: string,
+    turnBeforeMove: Color,
+  ) => {
+    const nextIndex = chessPositions.length;
+
+    chessJs.move({
+      from,
+      to,
+      promotion: "q",
+    });
+
+    const nextFen = chessJs.fen();
+    calculateBestMove(nextFen, nextIndex, 15);
+    dispatch(
+      setChessPosition({
+        fen: nextFen,
+        turnBeforeMove,
+        isCheck: chessJs.isCheck(),
+        movedToSquare: `${from}${to}`,
+      }),
+    );
+  };
 
   function onSquareClick(args: SquareHandlerArgs) {
-    if (possibleMoves.toSquares.length > 0) {
-      for (let i = 0; i < possibleMoves.toSquares.length; i++) {
-        const turn = chessJs.turn();
-        const nextIndex = chessPositions.length;
-        const toSquare = possibleMoves.toSquares[i].startsWith("O-O")
-          ? getCastleSquare(possibleMoves.toSquares[i], turn)
-          : filterSquareString(possibleMoves.toSquares[i], turn);
-        if (toSquare.includes(args.square)) {
-          chessJs.move({
-            from: possibleMoves.fromSquare,
-            to: toSquare,
-            promotion: "q",
-          });
-          const nextFen = chessJs.fen();
-          calculateBestMove(nextFen, 15, nextIndex);
-          dispatch(setChessPosition({ fen: nextFen, turn: turn }));
+    const filteredPossibleMoves = filterPossibleToSquaresMoves(possibleMoves);
+    if (filteredPossibleMoves.toSquares.length > 0) {
+      for (let i = 0; i < filteredPossibleMoves.toSquares.length; i++) {
+        const turnBeforeMove = chessJs.turn();
+        const toSquare = filteredPossibleMoves.toSquares[i].startsWith("O-O")
+          ? getCastleSquare(filteredPossibleMoves.toSquares[i], turnBeforeMove)
+          : filterSquareString(
+              filteredPossibleMoves.toSquares[i],
+              turnBeforeMove,
+            );
 
+        if (toSquare.includes(args.square)) {
+          applyMoveAndAnalyze(
+            filteredPossibleMoves.fromSquare,
+            toSquare,
+            turnBeforeMove,
+          );
           return;
         }
       }
@@ -110,19 +158,9 @@ export default function useChessBoard() {
       return false;
     }
 
-    const turn = chessJs.turn();
-    const nextIndex = chessPositions.length;
+    const turnBeforeMove = chessJs.turn();
     try {
-      chessJs.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: "q",
-      });
-
-      const nextFen = chessJs.fen();
-      dispatch(setChessPosition({ fen: nextFen, turn: turn }));
-      calculateBestMove(nextFen, 15, nextIndex);
-
+      applyMoveAndAnalyze(sourceSquare, targetSquare, turnBeforeMove);
       return true;
     } catch {
       return false;
