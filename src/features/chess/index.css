@@ -1,5 +1,6 @@
+@import "tailwindcss";
+
 .possible-move::after {
-  /* background-color: rgba(255, 0, 0, 0.2) !important; */
   content: "";
   width: 35px;
   height: 35px;
@@ -18,4 +19,40 @@
   border: 8px solid rgba(128, 128, 128, 0.4);
   left: 0;
   top: 0;
+}
+
+div.move-classification::before {
+  @apply w-[40px] h-[40px] bg-[size:30px_30px] bg-center bg-no-repeat text-white absolute -right-4 -top-3 flex items-center justify-center rounded-full text-lg font-bold z-50;
+}
+
+div.move-classification.blunder::before {
+  @apply content-["??"] bg-red-600;
+}
+
+div.move-classification.inaccuracy::before {
+  @apply content-["?!"] bg-yellow-600;
+}
+
+div.move-classification.mistake::before {
+  @apply content-["?"] bg-yellow-600;
+}
+
+div.move-classification.good::before {
+  @apply content-[""] bg-[url('/icons/move-classifications/check.svg')] bg-green-600;
+}
+
+div.move-classification.great::before {
+  @apply content-[""] bg-[url('/icons/move-classifications/thumbs-up.svg')] bg-blue-600;
+}
+
+div.move-classification.excellent::before {
+  @apply content-[""] bg-[url('/icons/move-classifications/thumbs-up.svg')] bg-[size:30px_30px] bg-green-600;
+}
+
+div.move-classification.best::before {
+  @apply content-[""] bg-[url('/icons/move-classifications/star.svg')] bg-green-600;
+}
+
+div.move-classification.forced::before {
+  @apply content-[""] bg-[url('/icons/move-classifications/right-long.svg')]  bg-green-600;
 }

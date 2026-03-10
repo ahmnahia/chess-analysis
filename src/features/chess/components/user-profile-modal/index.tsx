@@ -16,9 +16,8 @@ import { Label } from "@/components/ui/label";
 import { chessComApi } from "../../api/chess-com";
 import { ChessComGame } from "../../types/chess-com";
 import { loadPositionsFromApi } from "../../chess-slice";
-import { pgnToFens } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
-import { Color } from "chess.js";
+import { Chess } from "chess.js";
 
 interface UserProfileModalProps {
   onGamesLoaded?: (games: ChessComGame[]) => void;
@@ -138,14 +137,19 @@ export default function UserProfileModal({
                 <button
                   onClick={async () => {
                     chessJs.loadPgn(game.pgn);
-                    const fens = pgnToFens(chessJs, game.pgn);
-                    const history = chessJs.history();
-                    const chessPositions = fens.map((fen, index) => ({
-                      fen,
-                      isCalculatingBestMove: true,
-                      currentTurn: fen.split(" ")[1] as Color,
-                      movedToSquare: history[index] ? history[index] : "",
-                    }));
+                    const history = chessJs.history({ verbose: true });
+                    const initialFen = history[0]?.before ?? new Chess().fen();
+                    const chessPositions = [
+                      {
+                        before: initialFen,
+                        after: initialFen,
+                        isCalculatingBestMove: true,
+                      },
+                      ...history.map((move) => ({
+                        ...move,
+                        isCalculatingBestMove: true,
+                      })),
+                    ];
                     dispatch(loadPositionsFromApi(chessPositions));
                     await calculateBestMovesForPositions(chessPositions);
                   }}

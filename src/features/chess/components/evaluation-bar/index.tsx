@@ -23,10 +23,10 @@ export const EvaluationBar = () => {
           whiteShare: 0.5,
         }
       : (chessPositions[currentChessPositionIdx]?.evaluationView ??
-          chessPositions[currentChessPositionIdx - 1]?.evaluationView ?? {
-            whiteValue: 0,
-            whiteShare: 0.5,
-          });
+        chessPositions[currentChessPositionIdx - 1]?.evaluationView ?? {
+          whiteValue: 0,
+          whiteShare: 0.5,
+        });
 
   const blackValue = -evaluationView.whiteValue;
   const blackShare = 1 - evaluationView.whiteShare;
@@ -34,16 +34,20 @@ export const EvaluationBar = () => {
   return (
     <div className="self-stretch my-2 w-10 min-w-10 rounded-md border border-border overflow-hidden flex flex-col">
       <div
-        className="bg-black text-white flex items-start justify-center pt-1 text-xs font-semibold transition-all duration-300"
+        className="bg-zinc-700 text-white flex items-start justify-center pt-1 text-xs font-semibold transition-all duration-300"
         style={{ flexGrow: blackShare }}
       >
-        <span>{formatEvaluation(blackValue)}</span>
+        {blackValue >= evaluationView.whiteValue && (
+          <span>{formatEvaluation(blackValue)}</span>
+        )}
       </div>
       <div
         className="bg-white text-black flex items-end justify-center pb-1 text-xs font-semibold transition-all duration-300"
         style={{ flexGrow: evaluationView.whiteShare }}
       >
-        <span>{formatEvaluation(evaluationView.whiteValue)}</span>
+        {evaluationView.whiteValue >= blackValue && (
+          <span>{formatEvaluation(evaluationView.whiteValue)}</span>
+        )}
       </div>
     </div>
   );

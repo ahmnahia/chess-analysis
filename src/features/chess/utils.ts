@@ -1,12 +1,8 @@
-import { ChessClassNames } from "./enums";
-import {
-  ChessJs,
-  MoveClassification,
-  PossibleMoves,
-} from "./types/chess-board";
+import { ChessClassNames, MoveClassification } from "./enums";
+import { ChessJs, PossibleMoves } from "./types/chess-board";
 import { Color } from "chess.js";
 
-const toggleSquareClassName = (square: string, className: ChessClassNames) => {
+const toggleSquareClassName = (square: string, className: ChessClassNames | MoveClassification) => {
   const squareEle = document.querySelector(`div[data-square="${square}"]`);
   squareEle?.classList.contains(className)
     ? squareEle?.classList.remove(className)
@@ -75,8 +71,10 @@ export const getEvaluationDataFromEngineInfo = (
   const type = match[1];
   const value = parseInt(match[2], 10);
 
-  const scoreForSideToMove = type === "cp" ? value / 100 : value > 0 ? 100 : -100;
-  const whiteValue = sideToMove === "w" ? scoreForSideToMove : -scoreForSideToMove;
+  const scoreForSideToMove =
+    type === "cp" ? value / 100 : value > 0 ? 100 : -100;
+  const whiteValue =
+    sideToMove === "w" ? scoreForSideToMove : -scoreForSideToMove;
 
   const sigmoid = (input: number) => 1 / (1 + Math.exp(-0.7 * input));
   const rawWhiteShare = sigmoid(whiteValue);
@@ -142,21 +140,39 @@ export const getMoveClassification = (
   const normalizedPlayedMove = playedMove.trim().toLowerCase();
   const normalizedBestMove = bestMove.trim().toLowerCase();
 
-  if (legalMovesCount === 1) return "forced";
+  console.log("legal moves count", legalMovesCount);
+  
 
   if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
-    return "best";
+    return MoveClassification.BEST;
   }
 
-  const lossInPawns =
-    playedBy === "w"
-      ? previousEval - currentEval
-      : currentEval - previousEval;
+  if (legalMovesCount === 1) return MoveClassification.FORCED;
 
-  if (lossInPawns > 2.5) return "blunder";
-  if (lossInPawns > 1.0) return "mistake";
-  if (lossInPawns > 0.5) return "inaccuracy";
-  if (lossInPawns < -1.0) return "great";
-  if (lossInPawns > 0.1) return "good";
-  return "excellent";
+  const lossInPawns =
+    playedBy === "w" ? previousEval - currentEval : currentEval - previousEval;
+
+  if (lossInPawns > 2.5) return MoveClassification.BLUNDER;
+  if (lossInPawns > 1.0) return MoveClassification.MISTAKE;
+  if (lossInPawns > 0.5) return MoveClassification.INACCURACY;
+  if (lossInPawns < -1.0) return MoveClassification.GREAT;
+  if (lossInPawns > 0.1) return MoveClassification.GOOD;
+  return MoveClassification.EXCELLENT;
+};
+
+export const handleMoveClassificationClassNames = (
+  square?: string,
+  moveClassification?: MoveClassification,
+  prevSquare?: string,
+  prevMoveClassification?: MoveClassification,
+) => {
+
+  if (square && moveClassification) {
+    toggleSquareClassName(square.slice(-2), ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(square.slice(-2), moveClassification);
+  }
+  if (prevSquare && prevMoveClassification) {
+    toggleSquareClassName(prevSquare.slice(-2), ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(prevSquare.slice(-2), prevMoveClassification);
+  }
 };

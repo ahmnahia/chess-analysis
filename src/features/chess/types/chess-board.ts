@@ -1,12 +1,11 @@
-import { Chess, Color } from "chess.js";
+import { Chess, Move } from "chess.js";
+import { MoveClassification } from "../enums";
 
 export type ChessJs = InstanceType<typeof Chess>;
 
 export type SquareStyles = Record<string, React.CSSProperties>;
 
 export type PossibleMoves = { fromSquare: string; toSquares: string[] };
-
-export type MovePlayed = { fromSquare: string; toSquare: string };
 
 export type EvaluationView = {
   whiteValue: number;
@@ -24,24 +23,10 @@ export interface ChessState {
   currentChessPositionIdx: number;
 }
 
-export type MoveClassification =
-  | "forced"
-  | "inaccuracy"
-  | "mistake"
-  | "blunder"
-  | "great"
-  | "good"
-  | "excellent"
-  | "best";
-
-export type ChessPosition = {
-  fen: string;
-  movePlayed?: MovePlayed;
+export interface ChessPosition extends Partial<Move> {
   bestMove?: string;
   moveClassification?: MoveClassification;
   evaluationView?: EvaluationView;
   isCalculatingBestMove: boolean;
   isCheck?: boolean;
-  currentTurn: Color;
-  movedToSquare: string;
-};
+}

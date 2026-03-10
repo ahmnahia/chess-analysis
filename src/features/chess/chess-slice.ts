@@ -8,7 +8,7 @@ import {
   ChessState,
   EvaluationView,
 } from "./types/chess-board";
-import { Color } from "chess.js";
+import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
 
 const initialState: ChessState = {
@@ -36,18 +36,14 @@ const chessSlice = createSlice({
     setChessPosition: (
       state,
       action: PayloadAction<{
-        fen: string;
-        movedToSquare: string;
-        turnBeforeMove?: Color;
+        move?: Partial<Move>;
         isCheck?: boolean;
       }>,
     ) => {
       state.chessPositions.push({
-        fen: action.payload.fen,
+        ...(action.payload.move ?? {}),
         isCalculatingBestMove: true,
         isCheck: action.payload.isCheck,
-        currentTurn: action.payload.turnBeforeMove === "w" ? "b" : "w",
-        movedToSquare: action.payload.movedToSquare,
       });
       state.currentChessPositionIdx = state.chessPositions.length - 1;
       state.possibleMoves = { fromSquare: "", toSquares: [] };
@@ -73,19 +69,21 @@ const chessSlice = createSlice({
       state.chessPositions[targetIndex].evaluationView =
         action.payload.evaluationView;
       state.chessPositions[targetIndex].isCalculatingBestMove = false;
+
       const previousPosition = state.chessPositions[targetIndex - 1];
-      const sideToMoveAfterPosition =
-        state.chessPositions[targetIndex].currentTurn;
-      const playedBy: Color = sideToMoveAfterPosition === "w" ? "b" : "w";
-      state.chessPositions[targetIndex].moveClassification =
-        getMoveClassification(
-          state.chessPositions[targetIndex].movedToSquare || "",
-          action.payload.evaluationView.whiteValue,
-          previousPosition?.evaluationView?.whiteValue || 0,
-          previousPosition?.bestMove || "",
-          action.payload.legalMovesCount || 0,
-          playedBy,
-        );
+      const currentPosition = state.chessPositions[targetIndex];
+
+      if (currentPosition.from && currentPosition.to && currentPosition.color) {
+        state.chessPositions[targetIndex].moveClassification =
+          getMoveClassification(
+            currentPosition.lan ?? "",
+            action.payload.evaluationView.whiteValue,
+            previousPosition?.evaluationView?.whiteValue || 0,
+            previousPosition?.bestMove || "",
+            action.payload.legalMovesCount || 0,
+            currentPosition.color,
+          );
+      }
     },
     clearPositionHistory: (state) => {
       state.chessPositions = [];

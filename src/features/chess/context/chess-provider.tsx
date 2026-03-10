@@ -30,6 +30,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
     whiteValue: 0,
     whiteShare: 0.5,
   });
+  const movesCountRef = useRef(chessJsRef.current.moves().length);
 
   useEffect(() => {
     if (!dispatch) return;
@@ -50,17 +51,17 @@ export function ChessProvider({ children }: { children: ReactNode }) {
 
       if (message.startsWith("bestmove")) {
         const bestMove = message.split(" ")[1];
-
-        const movesCount = chessJsRef.current.moves().length;
+        
         if (pendingTargetIndexRef.current !== null) {
           dispatch(
             setBestMove({
               index: pendingTargetIndexRef.current,
               bestMove,
               evaluationView: latestEvaluationViewRef.current,
-              legalMovesCount: movesCount,
+              legalMovesCount: movesCountRef.current,
             }),
           );
+          movesCountRef.current = chessJsRef.current.moves().length;
         }
 
         if (pendingResolverRef.current) {
@@ -107,6 +108,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
 
       const fenParts = fen.trim().split(/\s+/);
       sideToMoveRef.current = fenParts[1] === "b" ? "b" : "w";
+      movesCountRef.current = new Chess(fen).moves().length;
       latestEvaluationViewRef.current = {
         whiteValue: 0,
         whiteShare: 0.5,
@@ -133,7 +135,8 @@ export function ChessProvider({ children }: { children: ReactNode }) {
   const calculateBestMovesForPositions = useCallback(
     async (positions: ChessPositions, depth: number = 15) => {
       for (let index = 0; index < positions.length; index++) {
-        const fen = positions[index].fen;
+        const fen = positions[index].after;
+        if (!fen) continue;
         await runBestMoveAnalysis(fen, depth, index);
       }
     },
