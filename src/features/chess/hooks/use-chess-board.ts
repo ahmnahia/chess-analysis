@@ -35,10 +35,8 @@ export default function useChessBoard() {
     toSquares: [],
   });
   const previousTurnRef = useRef<Color>("w");
-
   const effectiveCurrentFen = chessPositions[currentChessPositionIdx]?.after;
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
-
 
   useEffect(() => {
     // handeling best move arrows
@@ -104,7 +102,6 @@ export default function useChessBoard() {
 
   const applyMoveAndAnalyze = (from: string, to: string) => {
     const nextIndex = chessPositions.length;
-
     const moved = chessJs.move({
       from,
       to,
@@ -118,8 +115,8 @@ export default function useChessBoard() {
     const history = chessJs.history({ verbose: true });
     const move = history[history.length - 1];
     const serializableMove = move ? { ...move } : undefined;
-
     const nextFen = chessJs.fen();
+
     calculateBestMove(nextFen, nextIndex, 15);
     dispatch(
       setChessPosition({
