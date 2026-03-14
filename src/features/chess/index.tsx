@@ -10,7 +10,7 @@ export default function ChessHome() {
   return (
     <Provider store={store}>
       <ChessProvider>
-        <div className="flex items-stretch gap-6 w-full justify-center">
+        <div className="flex items-stretch gap-6 w-full justify-center mt-8">
           <EvaluationBar />
           <CustomChessBoard />
           <SidebarInfo />

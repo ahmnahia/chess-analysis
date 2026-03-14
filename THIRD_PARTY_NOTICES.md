@@ -9,7 +9,9 @@ This project includes third-party assets and libraries. Their respective copyrig
 - Source: https://fontawesome.com/
 - License: https://fontawesome.com/license/free
 - Assets used:
-	- `public/icons/move-classifications/thumbs-up.svg`
-	- `public/icons/move-classifications/check.svg`
-	- `public/icons/move-classifications/star.svg`
-	- `public/icons/move-classifications/right-long.svg`
+	- `public/icons/thumbs-up.svg`
+	- `public/icons/check.svg`
+	- `public/icons/star.svg`
+	- `public/icons/right-long.svg`
+	- `public/icons/sun.svg`
+	- `public/icons/moon.svg`
