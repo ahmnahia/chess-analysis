@@ -1,7 +1,6 @@
-"use client";
+﻿"use client";
 import { Chessboard } from "react-chessboard";
-import useChessBoard from "./hooks/use-chess-board";
-import "./index.css";
+import useChessBoard from "../../hooks/use-chess-board";
 
 export default function CustomChessBoard() {
   const {
@@ -16,7 +15,7 @@ export default function CustomChessBoard() {
   return (
     <div className="" suppressHydrationWarning>
       <div className="flex justify-center items-center">
-        <div className="max-w-[800px]">
+        <div className="max-w-[80vh]">
           <Chessboard
             options={{
               position: currentPosition,

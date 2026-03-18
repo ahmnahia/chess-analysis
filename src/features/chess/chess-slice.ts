@@ -91,13 +91,13 @@ const chessSlice = createSlice({
     },
     setCurrentChessPositionIdx: (state, action: PayloadAction<number>) => {
       const index = action.payload;
-      if (index >= 0 && index < state.chessPositions.length) {
+      if (index >= -1 && index < state.chessPositions.length) {
         state.currentChessPositionIdx = index;
       }
     },
     loadPositionsFromApi: (state, action: PayloadAction<ChessPositions>) => {
       state.chessPositions = action.payload;
-      state.currentChessPositionIdx = action.payload.length > 0 ? 0 : -1;
+      state.currentChessPositionIdx = -1;
     },
   },
 });

@@ -35,12 +35,11 @@ export default function useChessBoard() {
     toSquares: [],
   });
   const previousTurnRef = useRef<Color>("w");
-  const effectiveCurrentFen = chessPositions[currentChessPositionIdx]?.after;
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
 
   useEffect(() => {
     // handeling best move arrows
-    if (currentChessPositionIdx > 0) {
+    if (currentChessPositionIdx >= -1) {
       const prevPos = chessPositions[currentChessPositionIdx - 1];
       const bestMove = prevPos?.bestMove;
 
@@ -53,15 +52,6 @@ export default function useChessBoard() {
       }
     }
   }, [currentChessPositionIdx]);
-
-  useEffect(() => {
-    // initialize with starting position if no positions exist
-    if (chessPositions.length === 0) {
-      const initialFen = chessJs.fen();
-      dispatch(setChessPosition({}));
-      calculateBestMove(initialFen, 0, 15);
-    }
-  }, []);
 
   useEffect(() => {
     const previousPossibleMoves = previousPossibleMovesRef.current;
@@ -88,16 +78,17 @@ export default function useChessBoard() {
     // handles the move classification class names
     if (chessPositions.length === 0) return;
 
-    const currentPosition = chessPositions[currentChessPositionIdx];
-    if (currentPosition.moveClassification || currentChessPositionIdx === 0) {
-      handleMoveClassificationClassNames(
-        currentPosition.lan,
-        currentPosition.moveClassification,
-        prevChessPosition.current?.lan,
-        prevChessPosition.current?.moveClassification,
-      );
-      prevChessPosition.current = currentPosition;
-    }
+    const currentPosition =
+      currentChessPositionIdx >= 0
+        ? chessPositions[currentChessPositionIdx]
+        : undefined;
+    handleMoveClassificationClassNames(
+      currentPosition?.lan,
+      currentPosition?.moveClassification,
+      prevChessPosition.current?.lan,
+      prevChessPosition.current?.moveClassification,
+    );
+    prevChessPosition.current = currentPosition;
   }, [chessPositions, currentChessPositionIdx, dispatch]);
 
   const applyMoveAndAnalyze = (from: string, to: string) => {
@@ -190,7 +181,7 @@ export default function useChessBoard() {
     onPieceDrop,
     chessPositions,
     onPieceDrag,
-    currentPosition: effectiveCurrentFen,
+    currentPosition: chessPositions[currentChessPositionIdx]?.after,
     arrows,
   };
 }

@@ -46,7 +46,7 @@ export default function UserProfileModal({
     setError(null);
 
     try {
-      // Fetch latest games from Chess.com
+      // fetch latest games from Chess.com
       const games = await chessComApi.getLatestGames(username, 10);
 
       if (games.length === 0) {
@@ -138,13 +138,7 @@ export default function UserProfileModal({
                   onClick={async () => {
                     chessJs.loadPgn(game.pgn);
                     const history = chessJs.history({ verbose: true });
-                    const initialFen = history[0]?.before ?? new Chess().fen();
                     const chessPositions = [
-                      {
-                        before: initialFen,
-                        after: initialFen,
-                        isCalculatingBestMove: true,
-                      },
                       ...history.map((move) => ({
                         ...move,
                         isCalculatingBestMove: true,

@@ -15,3 +15,11 @@ This project includes third-party assets and libraries. Their respective copyrig
 	- `public/icons/right-long.svg`
 	- `public/icons/sun.svg`
 	- `public/icons/moon.svg`
+	- `public/icons/angle-right.svg`
+	- `public/icons/forward-step.svg`
+	- `public/icons/piece-b.svg`
+	- `public/icons/piece-k.svg`
+	- `public/icons/piece-n.svg`
+	- `public/icons/piece-p.svg`
+	- `public/icons/piece-q.svg`
+	- `public/icons/piece-r.svg`
