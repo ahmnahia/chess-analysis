@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   selectChessState,
   setCurrentChessPositionIdx,
+  toggleBoardRotation,
 } from "../../chess-slice";
 import { SIDEBAR_NAV_ICONS } from "./constants";
 
@@ -58,11 +59,16 @@ export default function useSidebarInfo() {
     },
   ] as const;
 
+  const rotateBoard = () => {
+    dispatch(toggleBoardRotation());
+  };
+
   return {
     activeRef,
     navButtons,
     chessPositions,
     currentChessPositionIdx,
     handleChessPosition,
+    rotateBoard,
   };
 }

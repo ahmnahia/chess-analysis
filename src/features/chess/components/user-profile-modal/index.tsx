@@ -18,6 +18,7 @@ import { ChessComGame } from "../../types/chess-com";
 import { loadPositionsFromApi } from "../../chess-slice";
 import { useChessContext } from "../../context/chess-provider";
 import { Chess } from "chess.js";
+import { getRemainingAndCapturedPieces } from "../../utils";
 
 interface UserProfileModalProps {
   onGamesLoaded?: (games: ChessComGame[]) => void;
@@ -138,13 +139,26 @@ export default function UserProfileModal({
                   onClick={async () => {
                     chessJs.loadPgn(game.pgn);
                     const history = chessJs.history({ verbose: true });
+                    const tempChess = new Chess();
                     const chessPositions = [
-                      ...history.map((move) => ({
-                        ...move,
-                        isCalculatingBestMove: true,
-                      })),
+                      ...history.map((move) => {
+                        tempChess.move(move);
+                        return {
+                          ...move,
+                          isCalculatingBestMove: true,
+                          remainingPieces: getRemainingAndCapturedPieces(
+                            tempChess.board(),
+                          ),
+                        };
+                      }),
                     ];
-                    dispatch(loadPositionsFromApi(chessPositions));
+                    dispatch(
+                      loadPositionsFromApi({
+                        chessPositions,
+                        game,
+                        isBoardFlipped: username === game.black.username,
+                      }),
+                    );
                     await calculateBestMovesForPositions(chessPositions);
                   }}
                 >

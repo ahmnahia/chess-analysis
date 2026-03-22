@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
 import {
   selectChessState,
   setPossibleMoves,
   setChessPosition,
-} from "../chess-slice";
+} from "../../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
 import { Square, Color } from "chess.js";
 import {
@@ -15,9 +15,12 @@ import {
   filterPossibleToSquaresMoves,
   handlePossibleMovesClassNames,
   handleMoveClassificationClassNames,
-} from "../utils";
-import { useChessContext } from "../context/chess-provider";
-import { Arrow, ChessPosition, PossibleMoves } from "../types/chess-board";
+  getRemainingAndCapturedPieces,
+  clearAllSquareClassNames,
+} from "../../utils";
+import { useChessContext } from "../../context/chess-provider";
+import { Arrow, ChessPosition, PiecesCount, PossibleMoves } from "./types";
+import { PIECES_SCORE, TOTAL_COUNT_PIECES } from "../GamePlayerInfo/constants";
 import "@/lib/bigintToJson";
 
 export default function useChessBoard() {
@@ -25,7 +28,9 @@ export default function useChessBoard() {
     squareStyles,
     possibleMoves,
     chessPositions,
+    apiGame,
     currentChessPositionIdx,
+    isBoardFlipped,
   } = useSelector(selectChessState);
   const dispatch = useDispatch();
   const { chessJs, calculateBestMove } = useChessContext();
@@ -37,8 +42,35 @@ export default function useChessBoard() {
   const previousTurnRef = useRef<Color>("w");
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
 
+  const { whiteCapturedDiff, blackCapturedDiff } = useMemo(() => {
+    const currentPositionState = chessPositions[currentChessPositionIdx];
+    const remainingPiecesWhite = currentPositionState?.remainingPieces?.black;
+    const remainingPiecesBlack = currentPositionState?.remainingPieces?.white;
+
+    if (!remainingPiecesWhite || !remainingPiecesBlack) {
+      return { whiteCapturedDiff: 0, blackCapturedDiff: 0 };
+    }
+
+    let whiteCapturedScore = 0;
+    let blackCapturedScore = 0;
+
+    for (const [piece, count] of Object.entries(TOTAL_COUNT_PIECES)) {
+      const pieceKey = piece as keyof PiecesCount;
+      const whiteMissingCount = count - remainingPiecesWhite[pieceKey];
+      const blackMissingCount = count - remainingPiecesBlack[pieceKey];
+
+      whiteCapturedScore += whiteMissingCount * PIECES_SCORE[pieceKey];
+      blackCapturedScore += blackMissingCount * PIECES_SCORE[pieceKey];
+    }
+
+    const whiteDiff = Math.max(whiteCapturedScore - blackCapturedScore, 0);
+    const blackDiff = Math.max(blackCapturedScore - whiteCapturedScore, 0);
+
+    return { whiteCapturedDiff: whiteDiff, blackCapturedDiff: blackDiff };
+  }, [chessPositions, currentChessPositionIdx]);
+
   useEffect(() => {
-    // handeling best move arrows
+    // handling best move arrows
     if (currentChessPositionIdx >= -1) {
       const prevPos = chessPositions[currentChessPositionIdx - 1];
       const bestMove = prevPos?.bestMove;
@@ -51,7 +83,19 @@ export default function useChessBoard() {
         setArrows([]);
       }
     }
-  }, [currentChessPositionIdx]);
+  }, [currentChessPositionIdx, chessPositions]);
+
+  useEffect(() => {
+    // syncing chessjs state
+    if (
+      chessJs &&
+      chessPositions[currentChessPositionIdx]?.after !== chessJs.fen()
+    ) {
+      chessJs.load(
+        chessPositions[currentChessPositionIdx]?.after ?? chessJs.fen(),
+      );
+    }
+  }, [currentChessPositionIdx, chessPositions, chessJs]);
 
   useEffect(() => {
     const previousPossibleMoves = previousPossibleMovesRef.current;
@@ -76,7 +120,12 @@ export default function useChessBoard() {
 
   useEffect(() => {
     // handles the move classification class names
-    if (chessPositions.length === 0) return;
+    if (chessPositions.length === 0) {
+      prevChessPosition.current = undefined;
+      previousPossibleMovesRef.current = { fromSquare: "", toSquares: [] };
+      clearAllSquareClassNames();
+      return;
+    }
 
     const currentPosition =
       currentChessPositionIdx >= 0
@@ -89,7 +138,29 @@ export default function useChessBoard() {
       prevChessPosition.current?.moveClassification,
     );
     prevChessPosition.current = currentPosition;
-  }, [chessPositions, currentChessPositionIdx, dispatch]);
+  }, [chessPositions, currentChessPositionIdx]);
+
+  useEffect(() => {
+    // reapply classes after board re-mounts due to orientation change
+    const currentPosition =
+      currentChessPositionIdx >= 0
+        ? chessPositions[currentChessPositionIdx]
+        : undefined;
+
+    const timeout = setTimeout(() => {
+      if (currentPosition?.lan && currentPosition?.moveClassification) {
+        handleMoveClassificationClassNames(
+          currentPosition.lan,
+          currentPosition.moveClassification,
+        );
+      }
+      if (possibleMoves.toSquares.length > 0) {
+        handlePossibleMovesClassNames(possibleMoves, chessJs.turn());
+      }
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [isBoardFlipped]);
 
   const applyMoveAndAnalyze = (from: string, to: string) => {
     const nextIndex = chessPositions.length;
@@ -103,16 +174,19 @@ export default function useChessBoard() {
       return;
     }
 
+    chessJs.board();
     const history = chessJs.history({ verbose: true });
     const move = history[history.length - 1];
     const serializableMove = move ? { ...move } : undefined;
     const nextFen = chessJs.fen();
+    const remainingPieces = getRemainingAndCapturedPieces(chessJs.board());
 
     calculateBestMove(nextFen, nextIndex, 15);
     dispatch(
       setChessPosition({
         isCheck: chessJs.isCheck(),
         move: serializableMove,
+        remainingPieces,
       }),
     );
   };
@@ -176,12 +250,16 @@ export default function useChessBoard() {
 
   return {
     chessJs,
-    onSquareClick,
     squareStyles,
-    onPieceDrop,
     chessPositions,
-    onPieceDrag,
+    currentChessPositionIdx,
+    whiteCapturedDiff,
+    blackCapturedDiff,
     currentPosition: chessPositions[currentChessPositionIdx]?.after,
     arrows,
+    apiGame,
+    onPieceDrag,
+    onPieceDrop,
+    onSquareClick,
   };
 }

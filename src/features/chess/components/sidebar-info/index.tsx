@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SIDEBAR_INFO_CLASSES } from "./constants";
 import UserProfileModal from "../user-profile-modal";
 import { cn } from "@/lib/utils";
+import { ClearBoardModal } from "../clear-board-modal";
 
 export default function SidebarInfo() {
   const {
@@ -13,9 +14,8 @@ export default function SidebarInfo() {
     chessPositions,
     currentChessPositionIdx,
     handleChessPosition,
+    rotateBoard,
   } = useSidebarInfo();
-
-  console.log("CHESS POSITIONS IN SIDEBAR: ", chessPositions);
 
   return (
     <div className="h-full w-[300px] flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 ">
@@ -67,7 +67,9 @@ export default function SidebarInfo() {
                       }}
                     >
                       <div
-                        ref={currentChessPositionIdx === idx + 1 ? activeRef : null}
+                        ref={
+                          currentChessPositionIdx === idx + 1 ? activeRef : null
+                        }
                         className={cn(
                           "flex gap-1 py-1 pe-2",
                           currentChessPositionIdx === idx + 1 &&
@@ -111,6 +113,19 @@ export default function SidebarInfo() {
             />
           </Button>
         ))}
+      </div>
+      <div className="flex justify-center px-4 mt-2 gap-2">
+        <Button
+          variant="outline"
+          className={SIDEBAR_INFO_CLASSES.navButton + " w-fit"}
+          onClick={rotateBoard}
+        >
+          <ReactSVG
+            src={"/icons/rotate.svg"}
+            className={SIDEBAR_INFO_CLASSES.navIcon}
+          />
+        </Button>
+        <ClearBoardModal />
       </div>
     </div>
   );

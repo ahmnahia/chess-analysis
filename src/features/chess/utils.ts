@@ -1,8 +1,16 @@
 import { ChessClassNames, MoveClassification } from "./enums";
-import { ChessJs, PossibleMoves } from "./types/chess-board";
-import { Color } from "chess.js";
+import {
+  ChessBoard,
+  ChessJs,
+  PossibleMoves,
+  RemainingPieces,
+} from "./components/custom-chess-board/types";
+import { Color, PieceSymbol, Square } from "chess.js";
 
-const toggleSquareClassName = (square: string, className: ChessClassNames | MoveClassification) => {
+const toggleSquareClassName = (
+  square: string,
+  className: ChessClassNames | MoveClassification,
+) => {
   const squareEle = document.querySelector(`div[data-square="${square}"]`);
   squareEle?.classList.contains(className)
     ? squareEle?.classList.remove(className)
@@ -140,9 +148,6 @@ export const getMoveClassification = (
   const normalizedPlayedMove = playedMove.trim().toLowerCase();
   const normalizedBestMove = bestMove.trim().toLowerCase();
 
-  console.log("legal moves count", legalMovesCount);
-  
-
   if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
     return MoveClassification.BEST;
   }
@@ -160,19 +165,65 @@ export const getMoveClassification = (
   return MoveClassification.EXCELLENT;
 };
 
+export const clearAllSquareClassNames = () => {
+  const allClasses = [
+    ...Object.values(ChessClassNames),
+    ...Object.values(MoveClassification),
+  ];
+  allClasses.forEach((cls) => {
+    document.querySelectorAll(`.${cls}`).forEach((el) => {
+      el.classList.remove(cls);
+    });
+  });
+};
+
 export const handleMoveClassificationClassNames = (
   square?: string,
   moveClassification?: MoveClassification,
   prevSquare?: string,
   prevMoveClassification?: MoveClassification,
 ) => {
-
   if (square && moveClassification) {
-    toggleSquareClassName(square.slice(-2), ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(
+      square.slice(-2),
+      ChessClassNames.MOVE_CLASSIFICATION,
+    );
     toggleSquareClassName(square.slice(-2), moveClassification);
   }
   if (prevSquare && prevMoveClassification) {
-    toggleSquareClassName(prevSquare.slice(-2), ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(
+      prevSquare.slice(-2),
+      ChessClassNames.MOVE_CLASSIFICATION,
+    );
     toggleSquareClassName(prevSquare.slice(-2), prevMoveClassification);
   }
+};
+
+const createEmptyPieceCount = (): Record<PieceSymbol, number> => ({
+  p: 0,
+  n: 0,
+  b: 0,
+  r: 0,
+  q: 0,
+  k: 0,
+});
+
+export const getRemainingAndCapturedPieces = (
+  board: ChessBoard,
+): RemainingPieces => {
+  const remainingPieces: RemainingPieces = {
+    white: createEmptyPieceCount(),
+    black: createEmptyPieceCount(),
+  };
+
+  for (const row of board) {
+    for (const cell of row) {
+      if (cell) {
+        const colorKey = cell.color === "w" ? "white" : "black";
+        remainingPieces[colorKey][cell.type]++;
+      }
+    }
+  }
+
+  return remainingPieces;
 };

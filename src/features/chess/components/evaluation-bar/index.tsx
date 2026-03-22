@@ -2,9 +2,10 @@
 
 import { useSelector } from "react-redux";
 import { selectChessState } from "../../chess-slice";
+import { cn } from "@/lib/utils";
 
 export const EvaluationBar = () => {
-  const { chessPositions, currentChessPositionIdx } =
+  const { chessPositions, currentChessPositionIdx, isBoardFlipped } =
     useSelector(selectChessState);
 
   const formatEvaluation = (value: number): string => {
@@ -32,9 +33,17 @@ export const EvaluationBar = () => {
   const blackShare = 1 - evaluationView.whiteShare;
 
   return (
-    <div className="self-stretch my-2 w-10 min-w-10 rounded-md border border-border overflow-hidden flex flex-col">
+    <div
+      className={cn(
+        "self-stretch my-2 w-10 min-w-10 rounded-md border border-border overflow-hidden flex flex-col",
+        isBoardFlipped && "flex-col-reverse",
+      )}
+    >
       <div
-        className="bg-zinc-700 text-white flex items-start justify-center pt-1 text-xs font-semibold transition-all duration-300"
+        className={cn(
+          "bg-zinc-700 text-white flex items-start justify-center pt-1 text-xs font-semibold transition-all duration-300",
+          isBoardFlipped && "items-end pt-0 pb-1",
+        )}
         style={{ flexGrow: blackShare }}
       >
         {blackValue >= evaluationView.whiteValue && (
@@ -42,7 +51,10 @@ export const EvaluationBar = () => {
         )}
       </div>
       <div
-        className="bg-white text-black flex items-end justify-center pb-1 text-xs font-semibold transition-all duration-300"
+        className={cn(
+          "bg-white text-black flex items-end justify-center pb-1 text-xs font-semibold transition-all duration-300",
+          isBoardFlipped && "items-start pt-1 pb-0",
+        )}
         style={{ flexGrow: evaluationView.whiteShare }}
       >
         {evaluationView.whiteValue >= blackValue && (

@@ -11,7 +11,7 @@ export default function ChessHome() {
   return (
     <Provider store={store}>
       <ChessProvider>
-        <div className="flex h-full items-stretch gap-6 w-full justify-center mt-8">
+        <div className="flex max-h-[90vh] items-stretch gap-6 w-full justify-center mt-8">
           <EvaluationBar />
           <CustomChessBoard />
           <SidebarInfo />

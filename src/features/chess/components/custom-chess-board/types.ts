@@ -1,5 +1,6 @@
-import { Chess, Move } from "chess.js";
-import { MoveClassification } from "../enums";
+import { Chess, Color, Move, PieceSymbol, Square } from "chess.js";
+import { MoveClassification } from "../../enums";
+import { ChessComGame } from "../../types/chess-com";
 
 export type ChessJs = InstanceType<typeof Chess>;
 
@@ -12,16 +13,30 @@ export type EvaluationView = {
   whiteShare: number;
 };
 
-export type ChessPositions = ChessPosition[];
-
 export type Arrow = { startSquare: string; endSquare: string; color: string };
 
 export interface ChessState {
   squareStyles: Record<string, React.CSSProperties>;
   possibleMoves: PossibleMoves;
   chessPositions: ChessPositions;
+  customChessPositions: CustomChessPosition[];
   currentChessPositionIdx: number;
+  isBoardFlipped: boolean;
+  apiGame?: ChessComGame;
 }
+
+export type ChessBoard = ({
+  square: Square;
+  type: PieceSymbol;
+  color: Color;
+} | null)[][];
+
+export type PiecesCount = Record<PieceSymbol, number>;
+
+export type RemainingPieces = {
+  white: PiecesCount;
+  black: PiecesCount;
+};
 
 export interface ChessPosition extends Partial<Move> {
   bestMove?: string;
@@ -29,4 +44,11 @@ export interface ChessPosition extends Partial<Move> {
   evaluationView?: EvaluationView;
   isCalculatingBestMove: boolean;
   isCheck?: boolean;
+  remainingPieces?: RemainingPieces;
+}
+
+export type ChessPositions = ChessPosition[];
+
+export interface CustomChessPosition extends ChessPosition {
+  chessPositionIdx: number;
 }

@@ -13,7 +13,7 @@ import { Chess } from "chess.js";
 import { useDispatch } from "react-redux";
 import { ChessContextValue } from "../types/context";
 import { setBestMove } from "../chess-slice";
-import { ChessPositions } from "../types/chess-board";
+import { ChessPositions } from "../components/custom-chess-board/types";
 import { getEvaluationDataFromEngineInfo } from "../utils";
 
 const ChessContext = createContext<ChessContextValue | null>(null);
@@ -51,7 +51,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
 
       if (message.startsWith("bestmove")) {
         const bestMove = message.split(" ")[1];
-        
+
         if (pendingTargetIndexRef.current !== null) {
           dispatch(
             setBestMove({
