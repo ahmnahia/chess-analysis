@@ -1,3 +1,4 @@
+import { PieceSymbol } from "chess.js";
 import { PiecesCount } from "../custom-chess-board/types";
 
 export const GAME_PLAYER_INFO_COLORS = {
@@ -26,5 +27,14 @@ export const PIECES_SCORE: PiecesCount = {
   b: 3,
   r: 5,
   q: 9,
+  k: 0,
+};
+
+export const EMPTY_PIECE_COUNT: Record<PieceSymbol, number> = {
+  p: 0,
+  n: 0,
+  b: 0,
+  r: 0,
+  q: 0,
   k: 0,
 };

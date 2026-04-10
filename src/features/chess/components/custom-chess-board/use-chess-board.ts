@@ -164,6 +164,7 @@ export default function useChessBoard() {
 
   const applyMoveAndAnalyze = (from: string, to: string) => {
     const nextIndex = chessPositions.length;
+    const legalMovesCount = chessJs.moves().length;
     const moved = chessJs.move({
       from,
       to,
@@ -174,14 +175,13 @@ export default function useChessBoard() {
       return;
     }
 
-    chessJs.board();
     const history = chessJs.history({ verbose: true });
     const move = history[history.length - 1];
     const serializableMove = move ? { ...move } : undefined;
     const nextFen = chessJs.fen();
     const remainingPieces = getRemainingAndCapturedPieces(chessJs.board());
 
-    calculateBestMove(nextFen, nextIndex, 15);
+    calculateBestMove(nextFen, nextIndex, legalMovesCount, 15);
     dispatch(
       setChessPosition({
         isCheck: chessJs.isCheck(),
