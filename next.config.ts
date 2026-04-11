@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/engines/*",
+        source: "/engines/(.*)",
         headers: [
           {
             key: "Cache-Control",

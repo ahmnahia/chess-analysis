@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useSelector } from "react-redux";
 import { Chessboard } from "react-chessboard";
 import { selectChessState } from "../../chess-slice";
@@ -22,7 +22,7 @@ export default function CustomChessBoard() {
 
   return (
     <div
-      className={cn(isBoardFlipped && "flex flex-col-reverse")}
+      className={cn(isBoardFlipped && "flipped-board flex flex-col-reverse")}
       suppressHydrationWarning
     >
       <div className={cn(isBoardFlipped ? "mt-4" : "mb-4")}>

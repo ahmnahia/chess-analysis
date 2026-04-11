@@ -1,28 +1,31 @@
 @reference "../../app/globals.css";
 
+#chessboard-board {
+  @apply overflow-visible!;
+}
+
 .possible-move::after {
-  content: "";
-  width: 35px;
-  height: 35px;
-  border-radius: 100%;
-  background-color: rgba(128, 128, 128, 0.4);
-  position: absolute;
-  left: 50% - 20px;
-  top: 50% - 20px;
-  z-index: 10;
+  @apply content-[""] w-[35px] max-md:w-[15px] h-[35px] max-md:h-[15px] rounded-full bg-gray-400/40 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10;
 }
 
 .possible-move.can-capture::after {
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  border: 8px solid rgba(128, 128, 128, 0.4);
-  left: 0;
-  top: 0;
+  @apply w-full h-full bg-transparent border-8 max-md:border-3 border-gray-400/60;
 }
 
 div.move-classification::before {
-  @apply w-[40px] h-[40px] bg-[size:30px_30px] bg-center bg-no-repeat text-white absolute -right-4 -top-3 flex items-center justify-center rounded-full text-lg font-bold z-50;
+  @apply w-[40px] max-md:w-[20px] h-[40px] max-md:h-[20px] bg-size-[30px_30px] max-md:bg-size-[15px_15px] bg-center bg-no-repeat text-white absolute -right-4 max-md:-right-2 -top-3 max-md:-top-1 flex items-center justify-center rounded-full text-lg max-md:text-xs font-bold z-50;
+}
+
+div[data-column="h"].move-classification::before {
+  @apply right-0 max-md:right-0;
+}
+
+.flipped-board div[data-column="h"].move-classification::before {
+  @apply -right-4 max-md:-right-2;
+}
+
+.flipped-board div[data-column="a"].move-classification::before {
+  @apply right-0 max-md:right-0;
 }
 
 div.move-classification.blunder::before {
@@ -42,11 +45,11 @@ div.move-classification.good::before {
 }
 
 div.move-classification.great::before {
-  @apply content-[""] bg-[url('/icons/thumbs-up.svg')] bg-blue-600;
+  @apply content-[""] bg-[url('/icons/thumbs-up.svg')] bg-green-600;
 }
 
 div.move-classification.excellent::before {
-  @apply content-[""] bg-[url('/icons/thumbs-up.svg')] bg-[size:30px_30px] bg-green-600;
+  @apply content-[""] bg-[url('/icons/thumbs-up.svg')] bg-green-600;
 }
 
 div.move-classification.best::before {

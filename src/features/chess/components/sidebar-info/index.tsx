@@ -18,7 +18,7 @@ export default function SidebarInfo() {
   } = useSidebarInfo();
 
   return (
-    <div className="h-full w-[300px] flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 ">
+    <div className="h-full w-[300px] max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm  py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
       <div className="flex items-center justify-center gap-2">
         <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
           <ReactSVG
@@ -96,7 +96,7 @@ export default function SidebarInfo() {
           </div>
         )}
       </div>
-      <div className="flex justify-between px-4">
+      <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-md:gap-x-3 max-[350px]:gap-x-1! px-4 max-md:px-1 max-md:fixed max-md:w-full max-md:bg-zinc-100 dark:max-md:bg-zinc-800 max-md:left-0 max-md:bottom-0 max-md:py-2 max-md:z-50">
         {navButtons.map((button) => (
           <Button
             key={button.key}
@@ -113,18 +113,6 @@ export default function SidebarInfo() {
             />
           </Button>
         ))}
-      </div>
-      <div className="flex justify-center px-4 mt-2 gap-2">
-        <Button
-          variant="outline"
-          className={SIDEBAR_INFO_CLASSES.navButton + " w-fit"}
-          onClick={rotateBoard}
-        >
-          <ReactSVG
-            src={"/icons/rotate.svg"}
-            className={SIDEBAR_INFO_CLASSES.navIcon}
-          />
-        </Button>
         <ClearBoardModal />
       </div>
     </div>

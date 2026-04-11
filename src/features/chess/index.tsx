@@ -3,15 +3,15 @@ import CustomChessBoard from "./components/custom-chess-board";
 import { Provider } from "react-redux";
 import { store } from "@/app/store";
 import SidebarInfo from "./components/sidebar-info";
+import EvaluationBar from "./components/evaluation-bar";
 import { ChessProvider } from "./context/chess-provider";
-import { EvaluationBar } from "./components/evaluation-bar";
 import "./index.css";
 
 export default function ChessHome() {
   return (
     <Provider store={store}>
       <ChessProvider>
-        <div className="flex max-h-[90vh] items-stretch gap-6 w-full justify-center mt-8">
+        <div className="flex max-md:flex-col max-md:items-center max-h-[90vh] max-md:max-h-full items-stretch gap-6 max-md:gap-3 w-full justify-center mt-8 max-md:mt-2 px-4 max-md:px-2">
           <EvaluationBar />
           <CustomChessBoard />
           <SidebarInfo />
@@ -20,4 +20,3 @@ export default function ChessHome() {
     </Provider>
   );
 }
-

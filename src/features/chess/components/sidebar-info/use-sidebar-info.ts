@@ -14,18 +14,24 @@ export default function useSidebarInfo() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (activeRef.current) {
+    const isBigScreen = window.innerWidth >= 768;
+    if (activeRef.current && isBigScreen) {
       activeRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
     }
   }, [currentChessPositionIdx]);
+
   const canGoBack = currentChessPositionIdx >= 0;
   const canGoForward = currentChessPositionIdx < chessPositions.length - 1;
 
   const handleChessPosition = (index: number) => {
     dispatch(setCurrentChessPositionIdx(index));
+  };
+
+  const rotateBoard = () => {
+    dispatch(toggleBoardRotation());
   };
 
   const navButtons = [
@@ -57,11 +63,14 @@ export default function useSidebarInfo() {
       onClick: () => handleChessPosition(chessPositions.length - 1),
       disabled: !canGoForward,
     },
+    {
+      key: "rotate",
+      icon: SIDEBAR_NAV_ICONS.rotate,
+      rotate: false,
+      onClick: rotateBoard,
+      disabled: false,
+    },
   ] as const;
-
-  const rotateBoard = () => {
-    dispatch(toggleBoardRotation());
-  };
 
   return {
     activeRef,

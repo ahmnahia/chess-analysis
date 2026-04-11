@@ -8,4 +8,5 @@ export const SIDEBAR_NAV_ICONS = {
   previous: "/icons/angle-right.svg",
   next: "/icons/angle-right.svg",
   last: "/icons/forward-step.svg",
+  rotate: "/icons/rotate.svg",
 } as const;
