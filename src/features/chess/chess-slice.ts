@@ -1,6 +1,6 @@
 "use client";
 import { RootState } from "@/app/store";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 import {
   SquareStyles,
   PossibleMoves,
@@ -34,62 +34,77 @@ const chessSlice = createSlice({
       state,
       action: PayloadAction<{ possibleMoves: PossibleMoves; turn: Color }>,
     ) => {
-      state.possibleMoves = JSON.parse(
-        JSON.stringify(action.payload.possibleMoves),
-      );
+      state.possibleMoves = action.payload.possibleMoves;
     },
     setChessPosition: (
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         move?: Partial<Move>;
         isCheck?: boolean;
         remainingPieces: RemainingPieces;
       }>,
     ) => {
-      state.chessPositions.push({
-        ...(action.payload.move ?? {}),
+      const isBranching = state.chessPositions.length > 0;
+
+      // pass previous evaluation until new one is calculated to avoid flicker
+      const prevPosition =
+        state.customChessPositions[state.customChessPositions.length - 1] ||
+        state.chessPositions[state.currentChessPositionIdx];
+
+      state.customChessPositions.push({
+        ...payload.move,
         isCalculatingBestMove: true,
-        isCheck: action.payload.isCheck,
-        remainingPieces: action.payload.remainingPieces,
+        isCheck: payload.isCheck,
+        remainingPieces: payload.remainingPieces,
+        evaluationView: prevPosition?.evaluationView,
       });
-      state.currentChessPositionIdx = state.chessPositions.length - 1;
+
+      if (!isBranching) {
+        state.currentChessPositionIdx = state.customChessPositions.length - 1;
+      }
+
       state.possibleMoves = { fromSquare: "", toSquares: [] };
     },
     setBestMove: (
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         bestMove: string;
         evaluationView: EvaluationView;
-        index?: number;
+        index: number;
         legalMovesCount?: number;
       }>,
     ) => {
-      if (state.chessPositions.length === 0) return;
+      const isCustom = state.customChessPositions.length > 0;
+      const positions = isCustom
+        ? state.customChessPositions
+        : state.chessPositions;
+      const idx = isCustom ? positions.length - 1 : payload.index;
+      const pos = positions[idx];
 
-      const targetIndex = action.payload.index
-        ? action.payload.index
-        : state.chessPositions.length - 1;
+      if (!pos) return;
 
-      if (targetIndex < 0 || targetIndex >= state.chessPositions.length) return;
+      pos.bestMove = payload.bestMove;
+      pos.evaluationView = payload.evaluationView;
+      pos.isCalculatingBestMove = false;
 
-      state.chessPositions[targetIndex].bestMove = action.payload.bestMove;
-      state.chessPositions[targetIndex].evaluationView =
-        action.payload.evaluationView;
-      state.chessPositions[targetIndex].isCalculatingBestMove = false;
+      const prev =
+        isCustom && idx === 0
+          ? state.chessPositions[state.currentChessPositionIdx]
+          : positions[idx - 1];
 
-      const previousPosition = state.chessPositions[targetIndex - 1];
-      const currentPosition = state.chessPositions[targetIndex];
-
-      if (currentPosition.from && currentPosition.to && currentPosition.color) {
-        state.chessPositions[targetIndex].moveClassification =
-          getMoveClassification(
-            currentPosition.lan ?? "",
-            action.payload.evaluationView.whiteValue,
-            previousPosition?.evaluationView?.whiteValue || 0,
-            previousPosition?.bestMove || "",
-            action.payload.legalMovesCount || 0,
-            currentPosition.color,
-          );
+      if (pos.from && pos.to && pos.color) {
+        pos.moveClassification = getMoveClassification(
+          pos.lan ?? "",
+          payload.evaluationView.whiteValue,
+          prev?.evaluationView?.whiteValue || 0,
+          prev?.bestMove || "",
+          payload.legalMovesCount || 0,
+          pos.color,
+        );
       }
     },
     setCurrentChessPositionIdx: (state, action: PayloadAction<number>) => {
@@ -106,6 +121,7 @@ const chessSlice = createSlice({
         isBoardFlipped: boolean;
       }>,
     ) => {
+      state.customChessPositions = [];
       state.chessPositions = action.payload.chessPositions;
       state.apiGame = action.payload.game;
       state.isBoardFlipped = action.payload.isBoardFlipped;
@@ -114,8 +130,26 @@ const chessSlice = createSlice({
     toggleBoardRotation: (state) => {
       state.isBoardFlipped = !state.isBoardFlipped;
     },
-    resetChessState: (state) => {
-      Object.assign(state, initialState);
+    resetChessState: () => initialState,
+    undoCustomMove: (state, action: PayloadAction<number>) => {
+      const isBranching = state.chessPositions.length > 0;
+
+      if (action.payload === -1 && isBranching) {
+        state.customChessPositions = [];
+        state.possibleMoves = { fromSquare: "", toSquares: [] };
+        return;
+      }
+
+      const index = isBranching
+        ? state.customChessPositions.length - 1
+        : action.payload;
+      state.customChessPositions.splice(isBranching ? index : index + 1);
+
+      if (!isBranching) {
+        state.currentChessPositionIdx = index;
+      }
+
+      state.possibleMoves = { fromSquare: "", toSquares: [] };
     },
   },
 });
@@ -129,8 +163,44 @@ export const {
   loadPositionsFromApi,
   toggleBoardRotation,
   resetChessState,
+  undoCustomMove,
 } = chessSlice.actions;
 
 export default chessSlice.reducer;
 
 export const selectChessState = (state: RootState) => state.chess;
+
+export const selectActivePosition = createSelector(
+  [selectChessState],
+  (chess) => {
+    const { chessPositions, customChessPositions, currentChessPositionIdx } =
+      chess;
+    return customChessPositions.length > 0
+      ? customChessPositions[customChessPositions.length - 1]
+      : chessPositions[currentChessPositionIdx];
+  },
+);
+
+export const selectPreviousPosition = createSelector(
+  [selectChessState],
+  (chess) => {
+    const { chessPositions, customChessPositions, currentChessPositionIdx } =
+      chess;
+
+    if (customChessPositions.length > 0) {
+      if (customChessPositions.length >= 2) {
+        return customChessPositions[customChessPositions.length - 2];
+      }
+      if (chessPositions.length > 0) {
+        return chessPositions[currentChessPositionIdx];
+      }
+      return undefined;
+    }
+
+    if (currentChessPositionIdx >= 1) {
+      return chessPositions[currentChessPositionIdx - 1];
+    }
+
+    return undefined;
+  },
+);

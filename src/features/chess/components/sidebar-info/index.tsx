@@ -1,4 +1,5 @@
 "use client";
+import React, { Fragment, ReactNode, ForwardedRef } from "react";
 import { ReactSVG } from "react-svg";
 import useSidebarInfo from "./use-sidebar-info";
 import { Button } from "@/components/ui/button";
@@ -6,19 +7,63 @@ import { SIDEBAR_INFO_CLASSES } from "./constants";
 import UserProfileModal from "../user-profile-modal";
 import { cn } from "@/lib/utils";
 import { ClearBoardModal } from "../clear-board-modal";
+import { ChessPosition } from "../custom-chess-board/types";
+
+interface MoveButtonProps {
+  pos: ChessPosition;
+  isActive: boolean;
+  onClick: () => void;
+  className?: string;
+  isLatest?: boolean;
+}
+
+const MoveButton = React.forwardRef<HTMLElement, MoveButtonProps>(
+  ({ pos, isActive, onClick, className, isLatest }, ref) => {
+    return (
+      <button
+        ref={isActive || isLatest ? (ref as React.RefObject<HTMLButtonElement>) : null}
+        className={cn("w-2/5", className)}
+        onClick={onClick}
+      >
+        <div
+          className={cn(
+            SIDEBAR_INFO_CLASSES.moveContainer,
+            "w-3/4",
+            (isActive || isLatest) && SIDEBAR_INFO_CLASSES.activeBackground,
+          )}
+        >
+          <ReactSVG
+            src={`/icons/piece-${pos.piece}.svg`}
+            className={cn(
+              SIDEBAR_INFO_CLASSES.pieceIcon,
+              pos.color === "w"
+                ? "fill-dark-500 dark:fill-white"
+                : "fill-dark-900 dark:fill-dark-600",
+            )}
+          />
+          <span className="lowercase">{pos.san}</span>
+        </div>
+      </button>
+    );
+  }
+);
+
+MoveButton.displayName = "MoveButton";
 
 export default function SidebarInfo() {
   const {
     activeRef,
     navButtons,
-    chessPositions,
-    currentChessPositionIdx,
+    customChessPositions,
+    activePositions,
     handleChessPosition,
-    rotateBoard,
+    isMoveActive,
+    shouldShowCustomMoves,
+    isLatestCustomMove,
   } = useSidebarInfo();
 
   return (
-    <div className="h-full w-[300px] max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm  py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
+    <div className="h-full w-[300px] max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
       <div className="flex items-center justify-center gap-2">
         <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
           <ReactSVG
@@ -28,66 +73,62 @@ export default function SidebarInfo() {
         </span>
         <h3 className="text-center">Game Review</h3>
       </div>
+
       <div className="my-6 max-h-[40vh] overflow-y-auto">
-        {chessPositions.length > 0 ? (
-          chessPositions.map((pos, idx) => {
-            if (idx % 2 == 0)
-              return (
-                <div
-                  key={pos.before ?? "" + idx + pos.san}
-                  className="flex items-center gap-5 text-sm text-dark-800 dark:text-dark-400 even:bg-zinc-200 even:dark:bg-dark-900 py-1 px-4"
-                >
-                  <span className="w-4">{Math.floor(idx / 2) + 1}.</span>
-                  <button
-                    className="flex justify-start w-16 cursor-pointer"
-                    onClick={() => {
-                      handleChessPosition(idx);
-                    }}
+        {activePositions.length > 0 ? (
+          activePositions.map((pos, idx) => {
+            if (idx % 2 !== 0) return null;
+
+            return (
+              <div
+                key={pos.before ?? "" + idx + pos.san}
+                className={cn(
+                  SIDEBAR_INFO_CLASSES.moveRow,
+                  "even:bg-zinc-200 even:dark:bg-dark-900",
+                )}
+              >
+                <span className="w-1/5">{Math.floor(idx / 2) + 1}.</span>
+                
+                <MoveButton
+                  ref={activeRef}
+                  pos={pos}
+                  isActive={isMoveActive(idx)}
+                  onClick={() => handleChessPosition(idx)}
+                />
+
+                {activePositions[idx + 1] && (
+                  <MoveButton
+                    ref={activeRef}
+                    pos={activePositions[idx + 1]}
+                    isActive={isMoveActive(idx + 1)}
+                    onClick={() => handleChessPosition(idx + 1)}
+                  />
+                )}
+
+                {shouldShowCustomMoves(idx) && (
+                  <div
+                    key={`custom-moves-${idx}`}
+                    className={cn(
+                      SIDEBAR_INFO_CLASSES.moveRow,
+                      "bg-blue-200 dark:bg-cyan-950 my-1 w-full rounded-sm px-0",
+                    )}
                   >
-                    <div
-                      ref={currentChessPositionIdx === idx ? activeRef : null}
-                      className={cn(
-                        "flex gap-1 py-1 pe-2",
-                        currentChessPositionIdx === idx &&
-                          "bg-zinc-300 dark:bg-dark-700",
-                      )}
-                    >
-                      <ReactSVG
-                        src={`/icons/piece-${pos.piece}.svg`}
-                        className="[&_svg]:w-5 [&_svg]:h-5 fill-dark-500 dark:fill-white"
-                      />
-                      <span>{pos.san?.toLocaleLowerCase()}</span>
-                    </div>
-                  </button>
-                  {chessPositions[idx + 1] && (
-                    <button
-                      className="flex justify-start cursor-pointer"
-                      onClick={() => {
-                        handleChessPosition(idx + 1);
-                      }}
-                    >
-                      <div
-                        ref={
-                          currentChessPositionIdx === idx + 1 ? activeRef : null
-                        }
-                        className={cn(
-                          "flex gap-1 py-1 pe-2",
-                          currentChessPositionIdx === idx + 1 &&
-                            "bg-zinc-300 dark:bg-dark-700",
-                        )}
-                      >
-                        <ReactSVG
-                          src={`/icons/piece-${chessPositions[idx + 1].piece}.svg`}
-                          className="[&_svg]:w-5 [&_svg]:h-5 fill-dark-900 dark:fill-dark-600"
+                    {customChessPositions.map((cPos, cusMoveIdx) => (
+                      <Fragment key={`custom-move-fragment-${cusMoveIdx}`}>
+                        {cusMoveIdx % 2 === 0 && <span className="w-1/5"></span>}
+                        <MoveButton
+                          ref={activeRef}
+                          pos={cPos}
+                          isActive={false}
+                          isLatest={isLatestCustomMove(cusMoveIdx)}
+                          onClick={() => handleChessPosition(cusMoveIdx)}
                         />
-                        <span>
-                          {chessPositions[idx + 1]?.san?.toLowerCase()}
-                        </span>
-                      </div>
-                    </button>
-                  )}
-                </div>
-              );
+                      </Fragment>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
           })
         ) : (
           <div className="flex flex-col items-center gap-4 px-4">
@@ -96,6 +137,7 @@ export default function SidebarInfo() {
           </div>
         )}
       </div>
+
       <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-md:gap-x-3 max-[350px]:gap-x-1! px-4 max-md:px-1 max-md:fixed max-md:w-full max-md:bg-zinc-100 dark:max-md:bg-zinc-800 max-md:left-0 max-md:bottom-0 max-md:py-2 max-md:z-50">
         {navButtons.map((button) => (
           <Button

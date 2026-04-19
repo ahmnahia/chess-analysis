@@ -48,7 +48,6 @@ export default function useEngine() {
 
       if (message.startsWith("bestmove")) {
         const bestMove = message.split(" ")[1];
-        console.log("bestMove", bestMove);
 
         if (pendingTargetIndexRef.current !== null) {
           dispatch(
@@ -107,7 +106,7 @@ export default function useEngine() {
       });
 
       const fenParts = fen.trim().split(/\s+/);
-      sideToMoveRef.current = fenParts[1] === "b" ? "b" : "w";
+      sideToMoveRef.current = fenParts[1] as "w" | "b";
       movesCountChessJsRef.current = legalMovesCount;
       latestEvaluationViewRef.current = {
         whiteValue: 0,

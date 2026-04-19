@@ -1,11 +1,13 @@
 "use client";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
 import {
   selectChessState,
   setPossibleMoves,
   setChessPosition,
+  selectActivePosition,
+  selectPreviousPosition,
 } from "../../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
 import { Square, Color } from "chess.js";
@@ -24,16 +26,19 @@ import { PIECES_SCORE, TOTAL_COUNT_PIECES } from "../GamePlayerInfo/constants";
 import "@/lib/bigintToJson";
 
 export default function useChessBoard() {
+  const { chessJs, calculateBestMove } = useChessContext();
+  const dispatch = useDispatch();
   const {
     squareStyles,
     possibleMoves,
     chessPositions,
+    customChessPositions,
     apiGame,
     currentChessPositionIdx,
     isBoardFlipped,
   } = useSelector(selectChessState);
-  const dispatch = useDispatch();
-  const { chessJs, calculateBestMove } = useChessContext();
+  const activePosition = useSelector(selectActivePosition);
+  const previousPosition = useSelector(selectPreviousPosition);
   const [arrows, setArrows] = useState<Arrow[]>([]);
   const previousPossibleMovesRef = useRef<PossibleMoves>({
     fromSquare: "",
@@ -41,11 +46,11 @@ export default function useChessBoard() {
   });
   const previousTurnRef = useRef<Color>("w");
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
+  const prevIsBoardFlippedRef = useRef<boolean>(isBoardFlipped);
 
   const { whiteCapturedDiff, blackCapturedDiff } = useMemo(() => {
-    const currentPositionState = chessPositions[currentChessPositionIdx];
-    const remainingPiecesWhite = currentPositionState?.remainingPieces?.black;
-    const remainingPiecesBlack = currentPositionState?.remainingPieces?.white;
+    const remainingPiecesWhite = activePosition?.remainingPieces?.black;
+    const remainingPiecesBlack = activePosition?.remainingPieces?.white;
 
     if (!remainingPiecesWhite || !remainingPiecesBlack) {
       return { whiteCapturedDiff: 0, blackCapturedDiff: 0 };
@@ -67,13 +72,12 @@ export default function useChessBoard() {
     const blackDiff = Math.max(blackCapturedScore - whiteCapturedScore, 0);
 
     return { whiteCapturedDiff: whiteDiff, blackCapturedDiff: blackDiff };
-  }, [chessPositions, currentChessPositionIdx]);
+  }, [activePosition]);
 
   useEffect(() => {
     // handling best move arrows
     if (currentChessPositionIdx >= -1) {
-      const prevPos = chessPositions[currentChessPositionIdx - 1];
-      const bestMove = prevPos?.bestMove;
+      const bestMove = previousPosition?.bestMove;
 
       if (bestMove && bestMove !== "0000" && bestMove.length >= 4) {
         const startSquare = bestMove.slice(0, 2);
@@ -83,21 +87,19 @@ export default function useChessBoard() {
         setArrows([]);
       }
     }
-  }, [currentChessPositionIdx, chessPositions]);
+  }, [previousPosition]);
 
   useEffect(() => {
     // syncing chessjs state
-    if (
-      chessJs &&
-      chessPositions[currentChessPositionIdx]?.after !== chessJs.fen()
-    ) {
-      chessJs.load(
-        chessPositions[currentChessPositionIdx]?.after ?? chessJs.fen(),
-      );
+    if (currentChessPositionIdx === -1) {
+      chessJs.reset();
+    } else if (chessJs && activePosition?.after !== chessJs.fen()) {
+      chessJs.load(activePosition?.after ?? chessJs.fen());
     }
-  }, [currentChessPositionIdx, chessPositions, chessJs]);
+  }, [activePosition, chessJs]);
 
   useEffect(() => {
+    // handles the possible moves class names
     const previousPossibleMoves = previousPossibleMovesRef.current;
 
     if (previousPossibleMoves.toSquares.length > 0) {
@@ -120,38 +122,32 @@ export default function useChessBoard() {
 
   useEffect(() => {
     // handles the move classification class names
-    if (chessPositions.length === 0) {
+    if (customChessPositions.length === 0 && chessPositions.length === 0) {
       prevChessPosition.current = undefined;
       previousPossibleMovesRef.current = { fromSquare: "", toSquares: [] };
       clearAllSquareClassNames();
       return;
     }
 
-    const currentPosition =
-      currentChessPositionIdx >= 0
-        ? chessPositions[currentChessPositionIdx]
-        : undefined;
     handleMoveClassificationClassNames(
-      currentPosition?.lan,
-      currentPosition?.moveClassification,
+      activePosition?.lan,
+      activePosition?.moveClassification,
       prevChessPosition.current?.lan,
       prevChessPosition.current?.moveClassification,
     );
-    prevChessPosition.current = currentPosition;
-  }, [chessPositions, currentChessPositionIdx]);
+    prevChessPosition.current = activePosition;
+  }, [activePosition, customChessPositions, chessPositions]);
 
   useEffect(() => {
     // reapply classes after board re-mounts due to orientation change
-    const currentPosition =
-      currentChessPositionIdx >= 0
-        ? chessPositions[currentChessPositionIdx]
-        : undefined;
+    if (prevIsBoardFlippedRef.current === isBoardFlipped) return;
 
+    prevIsBoardFlippedRef.current = isBoardFlipped;
     const timeout = setTimeout(() => {
-      if (currentPosition?.lan && currentPosition?.moveClassification) {
+      if (activePosition?.lan && activePosition?.moveClassification) {
         handleMoveClassificationClassNames(
-          currentPosition.lan,
-          currentPosition.moveClassification,
+          activePosition.lan,
+          activePosition.moveClassification,
         );
       }
       if (possibleMoves.toSquares.length > 0) {
@@ -160,11 +156,12 @@ export default function useChessBoard() {
     }, 0);
 
     return () => clearTimeout(timeout);
-  }, [isBoardFlipped]);
+  }, [isBoardFlipped, activePosition, possibleMoves, chessJs]);
 
   const applyMoveAndAnalyze = (from: string, to: string) => {
-    const nextIndex = chessPositions.length;
+    const nextIndex = customChessPositions.length;
     const legalMovesCount = chessJs.moves().length;
+
     const moved = chessJs.move({
       from,
       to,
@@ -251,11 +248,11 @@ export default function useChessBoard() {
   return {
     chessJs,
     squareStyles,
-    chessPositions,
+    customChessPositions,
     currentChessPositionIdx,
     whiteCapturedDiff,
     blackCapturedDiff,
-    currentPosition: chessPositions[currentChessPositionIdx]?.after,
+    currentPosition: activePosition?.after,
     arrows,
     apiGame,
     onPieceDrag,

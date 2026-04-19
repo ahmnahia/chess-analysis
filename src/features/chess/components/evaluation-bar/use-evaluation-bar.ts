@@ -1,9 +1,10 @@
 import { useSelector } from "react-redux";
-import { selectChessState } from "../../chess-slice";
+import { selectChessState, selectActivePosition } from "../../chess-slice";
 
 export function useEvaluationBar() {
-  const { chessPositions, currentChessPositionIdx, isBoardFlipped } =
+  const { currentChessPositionIdx, isBoardFlipped } =
     useSelector(selectChessState);
+  const activePosition = useSelector(selectActivePosition);
 
   const formatEvaluation = (value: number): string => {
     if (Math.abs(value) >= 99) {
@@ -15,13 +16,12 @@ export function useEvaluationBar() {
   };
 
   const evaluationView =
-    currentChessPositionIdx <= 0
+    currentChessPositionIdx === -1 && !activePosition?.evaluationView
       ? {
           whiteValue: 0,
           whiteShare: 0.5,
         }
-      : (chessPositions[currentChessPositionIdx]?.evaluationView ??
-        chessPositions[currentChessPositionIdx - 1]?.evaluationView ?? {
+      : (activePosition?.evaluationView ?? {
           whiteValue: 0,
           whiteShare: 0.5,
         });

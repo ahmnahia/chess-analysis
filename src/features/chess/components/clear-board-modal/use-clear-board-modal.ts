@@ -9,7 +9,7 @@ import { clearAllSquareClassNames } from "../../utils";
 export default function useClearBoardModal() {
   const dispatch = useDispatch();
   const { chessJs } = useChessContext();
-  const { chessPositions } = useSelector(selectChessState);
+  const { chessPositions, customChessPositions } = useSelector(selectChessState);
 
   const handleClearBoard = useCallback(() => {
     clearAllSquareClassNames();
@@ -19,6 +19,6 @@ export default function useClearBoardModal() {
 
   return {
     handleClearBoard,
-    isResetDisabled: chessPositions.length === 0,
+    isResetDisabled: chessPositions.length === 0 && customChessPositions.length === 0,
   };
 }

@@ -1,17 +1,23 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectChessState,
   setCurrentChessPositionIdx,
   toggleBoardRotation,
+  undoCustomMove,
 } from "../../chess-slice";
 import { SIDEBAR_NAV_ICONS } from "./constants";
 
 export default function useSidebarInfo() {
-  const activeRef = useRef<HTMLDivElement>(null);
-  const { chessPositions, currentChessPositionIdx } =
+  const activeRef = useRef<HTMLElement>(null);
+  const { chessPositions, customChessPositions, currentChessPositionIdx } =
     useSelector(selectChessState);
   const dispatch = useDispatch();
+  const isCustom = customChessPositions.length > 0;
+  const activePositions =
+    isCustom && chessPositions.length === 0
+      ? customChessPositions
+      : chessPositions;
 
   useEffect(() => {
     const isBigScreen = window.innerWidth >= 768;
@@ -21,63 +27,119 @@ export default function useSidebarInfo() {
         block: "center",
       });
     }
-  }, [currentChessPositionIdx]);
+  }, [currentChessPositionIdx, customChessPositions.length]);
 
   const canGoBack = currentChessPositionIdx >= 0;
-  const canGoForward = currentChessPositionIdx < chessPositions.length - 1;
+  const canGoForward =
+    currentChessPositionIdx < chessPositions.length - 1 &&
+    customChessPositions.length === 0;
 
-  const handleChessPosition = (index: number) => {
-    dispatch(setCurrentChessPositionIdx(index));
-  };
+  const handleChessPosition = useCallback(
+    (index: number) => {
+      if (customChessPositions.length > 0) {
+        dispatch(undoCustomMove(index));
+      } else {
+        dispatch(setCurrentChessPositionIdx(index));
+      }
+    },
+    [dispatch, customChessPositions.length],
+  );
 
-  const rotateBoard = () => {
+  const rotateBoard = useCallback(() => {
     dispatch(toggleBoardRotation());
-  };
+  }, [dispatch]);
 
-  const navButtons = [
-    {
-      key: "first",
-      icon: SIDEBAR_NAV_ICONS.first,
-      rotate: true,
-      onClick: () => handleChessPosition(0),
-      disabled: !canGoBack,
+  const isMoveActive = useCallback(
+    (index: number) => {
+      return (
+        currentChessPositionIdx === index &&
+        (chessPositions.length === 0 ||
+          isCustom ||
+          index < chessPositions.length)
+      );
     },
-    {
-      key: "previous",
-      icon: SIDEBAR_NAV_ICONS.previous,
-      rotate: true,
-      onClick: () => handleChessPosition(currentChessPositionIdx - 1),
-      disabled: !canGoBack,
+    [currentChessPositionIdx, chessPositions.length, isCustom],
+  );
+
+  const shouldShowCustomMoves = useCallback(
+    (index: number) => {
+      return (
+        isCustom &&
+        chessPositions.length > 0 &&
+        (index === currentChessPositionIdx ||
+          index + 1 === currentChessPositionIdx)
+      );
     },
-    {
-      key: "next",
-      icon: SIDEBAR_NAV_ICONS.next,
-      rotate: false,
-      onClick: () => handleChessPosition(currentChessPositionIdx + 1),
-      disabled: !canGoForward,
+    [isCustom, chessPositions.length, currentChessPositionIdx],
+  );
+
+  const isLatestCustomMove = useCallback(
+    (index: number) => {
+      return customChessPositions.length - 1 === index;
     },
-    {
-      key: "last",
-      icon: SIDEBAR_NAV_ICONS.last,
-      rotate: false,
-      onClick: () => handleChessPosition(chessPositions.length - 1),
-      disabled: !canGoForward,
-    },
-    {
-      key: "rotate",
-      icon: SIDEBAR_NAV_ICONS.rotate,
-      rotate: false,
-      onClick: rotateBoard,
-      disabled: false,
-    },
-  ] as const;
+    [customChessPositions.length],
+  );
+
+  const navButtons = useMemo(
+    () =>
+      [
+        {
+          key: "first",
+          icon: SIDEBAR_NAV_ICONS.first,
+          rotate: true,
+          onClick: () => handleChessPosition(-1),
+          disabled: !canGoBack,
+        },
+        {
+          key: "previous",
+          icon: SIDEBAR_NAV_ICONS.previous,
+          rotate: true,
+          onClick: () => handleChessPosition(currentChessPositionIdx - 1),
+          disabled: !canGoBack,
+        },
+        {
+          key: "next",
+          icon: SIDEBAR_NAV_ICONS.next,
+          rotate: false,
+          onClick: () => handleChessPosition(currentChessPositionIdx + 1),
+          disabled: !canGoForward,
+        },
+        {
+          key: "last",
+          icon: SIDEBAR_NAV_ICONS.last,
+          rotate: false,
+          onClick: () => handleChessPosition(chessPositions.length - 1),
+          disabled: !canGoForward,
+        },
+        {
+          key: "rotate",
+          icon: SIDEBAR_NAV_ICONS.rotate,
+          rotate: false,
+          onClick: rotateBoard,
+          disabled: false,
+        },
+      ] as const,
+    [
+      canGoBack,
+      canGoForward,
+      currentChessPositionIdx,
+      chessPositions.length,
+      handleChessPosition,
+      rotateBoard,
+    ],
+  );
 
   return {
     activeRef,
     navButtons,
     chessPositions,
+    customChessPositions,
+    activePositions,
     currentChessPositionIdx,
     handleChessPosition,
     rotateBoard,
+    isMoveActive,
+    shouldShowCustomMoves,
+    isLatestCustomMove,
   };
 }

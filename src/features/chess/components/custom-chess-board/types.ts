@@ -19,7 +19,7 @@ export interface ChessState {
   squareStyles: Record<string, React.CSSProperties>;
   possibleMoves: PossibleMoves;
   chessPositions: ChessPositions;
-  customChessPositions: CustomChessPosition[];
+  customChessPositions: ChessPositions;
   currentChessPositionIdx: number;
   isBoardFlipped: boolean;
   apiGame?: ChessComGame;
@@ -48,7 +48,3 @@ export interface ChessPosition extends Partial<Move> {
 }
 
 export type ChessPositions = ChessPosition[];
-
-export interface CustomChessPosition extends ChessPosition {
-  chessPositionIdx: number;
-}
