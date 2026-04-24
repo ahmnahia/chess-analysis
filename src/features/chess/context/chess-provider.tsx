@@ -9,7 +9,7 @@ import {
 } from "react";
 import { Chess } from "chess.js";
 import { ChessContextValue } from "../types/context";
-import { ChessPositions } from "../components/custom-chess-board/types";
+import { ChessPositions } from "../types/chess";
 import useEngine from "../hooks/use-engine";
 
 const ChessContext = createContext<ChessContextValue | null>(null);

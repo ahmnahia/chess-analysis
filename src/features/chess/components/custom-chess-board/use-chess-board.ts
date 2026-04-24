@@ -21,7 +21,7 @@ import {
   clearAllSquareClassNames,
 } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
-import { Arrow, ChessPosition, PiecesCount, PossibleMoves } from "./types";
+import { Arrow, ChessPosition, PiecesCount, PossibleMoves } from "../../types/chess";
 import { PIECES_SCORE, TOTAL_COUNT_PIECES } from "../GamePlayerInfo/constants";
 import "@/lib/bigintToJson";
 

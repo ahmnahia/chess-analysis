@@ -8,7 +8,7 @@ import {
   ChessState,
   EvaluationView,
   RemainingPieces,
-} from "./components/custom-chess-board/types";
+} from "./types/chess";
 import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
 import { ChessComGame } from "./types/chess-com";

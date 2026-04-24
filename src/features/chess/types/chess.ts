@@ -1,6 +1,6 @@
 import { Chess, Color, Move, PieceSymbol, Square } from "chess.js";
-import { MoveClassification } from "../../enums";
-import { ChessComGame } from "../../types/chess-com";
+import { MoveClassification } from "../enums";
+import { ChessComGame } from "./chess-com";
 
 export type ChessJs = InstanceType<typeof Chess>;
 

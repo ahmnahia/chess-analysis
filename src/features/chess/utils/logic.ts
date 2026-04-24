@@ -3,7 +3,7 @@ import { MoveClassification } from "../enums";
 import {
   ChessBoard,
   RemainingPieces,
-} from "../components/custom-chess-board/types";
+} from "../types/chess";
 import { EMPTY_PIECE_COUNT } from "../components/GamePlayerInfo/constants";
 import openingNames from "../../../../public/opening-names.json";
 

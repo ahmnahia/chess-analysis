@@ -1,6 +1,6 @@
 import { Color } from "chess.js";
 import { ChessClassNames, MoveClassification } from "../enums";
-import { PossibleMoves } from "../components/custom-chess-board/types";
+import { PossibleMoves } from "../types/chess";
 
 const toggleSquareClassName = (
   square: string,

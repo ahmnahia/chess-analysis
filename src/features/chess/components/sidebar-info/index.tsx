@@ -7,7 +7,7 @@ import { SIDEBAR_INFO_CLASSES } from "./constants";
 import UserProfileModal from "../user-profile-modal";
 import { cn } from "@/lib/utils";
 import { ClearBoardModal } from "../clear-board-modal";
-import { ChessPosition } from "../custom-chess-board/types";
+import { ChessPosition } from "../../types/chess";
 
 interface MoveButtonProps {
   pos: ChessPosition;

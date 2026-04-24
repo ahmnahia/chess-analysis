@@ -1,4 +1,4 @@
-import { ChessPositions } from "../components/custom-chess-board/types";
+import { ChessPositions } from "./chess";
 import { Chess } from "chess.js";
 
 export type ChessContextValue = {

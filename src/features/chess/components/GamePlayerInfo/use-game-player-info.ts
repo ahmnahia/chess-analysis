@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Color } from "chess.js";
 import { selectChessState } from "../../chess-slice";
-import { PiecesCount } from "../custom-chess-board/types";
+import { PiecesCount } from "../../types/chess";
 import { TOTAL_COUNT_PIECES } from "./constants";
 
 export default function useGamePlayerInfo(color: Color) {
