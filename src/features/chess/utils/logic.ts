@@ -5,6 +5,7 @@ import {
   RemainingPieces,
 } from "../components/custom-chess-board/types";
 import { EMPTY_PIECE_COUNT } from "../components/GamePlayerInfo/constants";
+import openingNames from "../../../../public/opening-names.json";
 
 export const getAdaptiveEngineConfig = () => {
   const nav = navigator as Navigator & { deviceMemory?: number };
@@ -137,3 +138,33 @@ export const chooseEngine: (
 
   return "stockfish-18-lite.js";
 };
+
+export function formatMovesToOpeningKey(history: string[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < history.length; i++) {
+    if (i % 2 === 0) {
+      parts.push(`${Math.floor(i / 2) + 1}. ${history[i]}`);
+    } else {
+      parts.push(history[i]);
+    }
+  }
+  return parts.join(" ");
+}
+
+export function getOpeningName(history: string[]): string | undefined {
+  const openingMap = openingNames as Record<string, string>;
+  let lastFoundName: string | undefined = undefined;
+
+  for (let i = 1; i <= history.length; i++) {
+    const subHistory = history.slice(0, i);
+    const key = formatMovesToOpeningKey(subHistory);
+
+    if (openingMap[key]) {
+      lastFoundName = openingMap[key];
+    } else {
+      break;
+    }
+  }
+
+  return lastFoundName;
+}

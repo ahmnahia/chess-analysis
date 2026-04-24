@@ -45,6 +45,7 @@ export interface ChessPosition extends Partial<Move> {
   isCalculatingBestMove: boolean;
   isCheck?: boolean;
   remainingPieces?: RemainingPieces;
+  openingName?: string;
 }
 
 export type ChessPositions = ChessPosition[];

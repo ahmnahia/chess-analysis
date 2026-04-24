@@ -1,4 +1,3 @@
-// Chess.com API Types
 type Player = {
   username: string;
   rating: number;
@@ -17,7 +16,7 @@ export interface ChessComGame {
   black: Player;
   white: Player;
   result: string;
-  uuid: string; // unique game identifier
+  uuid: string;
 }
 
 export interface ChessComApiResponse {

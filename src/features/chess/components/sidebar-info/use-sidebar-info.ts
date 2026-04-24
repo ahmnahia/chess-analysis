@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectChessState,
+  selectActivePosition,
   setCurrentChessPositionIdx,
   toggleBoardRotation,
   undoCustomMove,
@@ -10,8 +11,12 @@ import { SIDEBAR_NAV_ICONS } from "./constants";
 
 export default function useSidebarInfo() {
   const activeRef = useRef<HTMLElement>(null);
-  const { chessPositions, customChessPositions, currentChessPositionIdx } =
-    useSelector(selectChessState);
+  const {
+    chessPositions,
+    customChessPositions,
+    currentChessPositionIdx,
+  } = useSelector(selectChessState);
+  const activePosition = useSelector(selectActivePosition);
   const dispatch = useDispatch();
   const isCustom = customChessPositions.length > 0;
   const activePositions =
@@ -141,5 +146,6 @@ export default function useSidebarInfo() {
     isMoveActive,
     shouldShowCustomMoves,
     isLatestCustomMove,
+    openingName: activePosition?.openingName,
   };
 }

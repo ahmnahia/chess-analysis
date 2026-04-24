@@ -12,6 +12,7 @@ import {
 import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
 import { ChessComGame } from "./types/chess-com";
+import { getOpeningName } from "./utils/";
 
 const initialState: ChessState = {
   squareStyles: {},
@@ -53,12 +54,21 @@ const chessSlice = createSlice({
         state.customChessPositions[state.customChessPositions.length - 1] ||
         state.chessPositions[state.currentChessPositionIdx];
 
+      const history = [
+        ...state.chessPositions
+          .slice(0, state.currentChessPositionIdx + 1)
+          .map((p) => p.san || ""),
+        ...state.customChessPositions.map((p) => p.san || ""),
+        payload.move?.san || "",
+      ];
+
       state.customChessPositions.push({
         ...payload.move,
         isCalculatingBestMove: true,
         isCheck: payload.isCheck,
         remainingPieces: payload.remainingPieces,
         evaluationView: prevPosition?.evaluationView,
+        openingName: getOpeningName(history),
       });
 
       if (!isBranching) {
@@ -122,7 +132,17 @@ const chessSlice = createSlice({
       }>,
     ) => {
       state.customChessPositions = [];
-      state.chessPositions = action.payload.chessPositions;
+      state.chessPositions = action.payload.chessPositions.map(
+        (pos, idx, arr) => {
+          const history = arr
+            .slice(0, idx + 1)
+            .map((p) => p.san || "")
+          return {
+            ...pos,
+            openingName: getOpeningName(history),
+          };
+        },
+      );
       state.apiGame = action.payload.game;
       state.isBoardFlipped = action.payload.isBoardFlipped;
       state.currentChessPositionIdx = -1;

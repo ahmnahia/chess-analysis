@@ -21,7 +21,11 @@ const MoveButton = React.forwardRef<HTMLElement, MoveButtonProps>(
   ({ pos, isActive, onClick, className, isLatest }, ref) => {
     return (
       <button
-        ref={isActive || isLatest ? (ref as React.RefObject<HTMLButtonElement>) : null}
+        ref={
+          isActive || isLatest
+            ? (ref as React.RefObject<HTMLButtonElement>)
+            : null
+        }
         className={cn("w-2/5", className)}
         onClick={onClick}
       >
@@ -45,7 +49,7 @@ const MoveButton = React.forwardRef<HTMLElement, MoveButtonProps>(
         </div>
       </button>
     );
-  }
+  },
 );
 
 MoveButton.displayName = "MoveButton";
@@ -60,18 +64,26 @@ export default function SidebarInfo() {
     isMoveActive,
     shouldShowCustomMoves,
     isLatestCustomMove,
+    openingName,
   } = useSidebarInfo();
 
   return (
     <div className="h-full w-[300px] max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
-      <div className="flex items-center justify-center gap-2">
-        <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
-          <ReactSVG
-            src="/icons/star.svg"
-            className="[&_svg]:w-6 [&_svg]:fill-dark-800 [&_svg]:dark:fill-dark-200"
-          />
-        </span>
-        <h3 className="text-center">Game Review</h3>
+      <div className="flex flex-col items-center justify-center gap-1">
+        <div className="flex items-center gap-2">
+          <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
+            <ReactSVG
+              src="/icons/star.svg"
+              className="[&_svg]:w-6 [&_svg]:fill-dark-800 [&_svg]:dark:fill-dark-200"
+            />
+          </span>
+          <h3 className="text-center">Game Review</h3>
+        </div>
+        {openingName && (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium px-4 text-center">
+            {openingName}
+          </p>
+        )}
       </div>
 
       <div className="my-6 max-h-[40vh] overflow-y-auto">
@@ -88,7 +100,7 @@ export default function SidebarInfo() {
                 )}
               >
                 <span className="w-1/5">{Math.floor(idx / 2) + 1}.</span>
-                
+
                 <MoveButton
                   ref={activeRef}
                   pos={pos}
@@ -115,7 +127,9 @@ export default function SidebarInfo() {
                   >
                     {customChessPositions.map((cPos, cusMoveIdx) => (
                       <Fragment key={`custom-move-fragment-${cusMoveIdx}`}>
-                        {cusMoveIdx % 2 === 0 && <span className="w-1/5"></span>}
+                        {cusMoveIdx % 2 === 0 && (
+                          <span className="w-1/5"></span>
+                        )}
                         <MoveButton
                           ref={activeRef}
                           pos={cPos}
