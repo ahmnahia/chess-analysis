@@ -22,6 +22,7 @@ export interface ChessState {
   customChessPositions: ChessPositions;
   currentChessPositionIdx: number;
   isBoardFlipped: boolean;
+  isAnalysisLoading: boolean;
   apiGame?: ChessComGame;
 }
 

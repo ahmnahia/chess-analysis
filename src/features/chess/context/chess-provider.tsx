@@ -16,7 +16,7 @@ const ChessContext = createContext<ChessContextValue | null>(null);
 
 export function ChessProvider({ children }: { children: ReactNode }) {
   const chessJsRef = useRef<InstanceType<typeof Chess>>(new Chess());
-  const { engine, runBestMoveAnalysis } = useEngine();
+  const { engine, isEngineLoading, runBestMoveAnalysis } = useEngine();
 
   const calculateBestMove = useCallback(
     (
@@ -46,6 +46,7 @@ export function ChessProvider({ children }: { children: ReactNode }) {
       value={{
         chessJs: chessJsRef.current,
         engine,
+        isEngineLoading,
         calculateBestMove,
         calculateBestMovesForPositions,
       }}

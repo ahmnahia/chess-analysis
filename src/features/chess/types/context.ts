@@ -4,6 +4,7 @@ import { Chess } from "chess.js";
 export type ChessContextValue = {
   chessJs: InstanceType<typeof Chess>;
   engine?: Worker;
+  isEngineLoading: boolean;
   calculateBestMove: (
     fen: string,
     targetIndex: number,

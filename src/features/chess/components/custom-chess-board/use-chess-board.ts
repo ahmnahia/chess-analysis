@@ -8,6 +8,7 @@ import {
   setChessPosition,
   selectActivePosition,
   selectPreviousPosition,
+  setAnalysIsLoading,
 } from "../../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
 import { Square, Color } from "chess.js";
@@ -171,6 +172,8 @@ export default function useChessBoard() {
     if (!moved) {
       return;
     }
+
+    dispatch(setAnalysIsLoading(true));
 
     const history = chessJs.history({ verbose: true });
     const move = history[history.length - 1];

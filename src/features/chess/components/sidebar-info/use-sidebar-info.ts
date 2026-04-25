@@ -8,6 +8,7 @@ import {
   undoCustomMove,
 } from "../../chess-slice";
 import { SIDEBAR_NAV_ICONS } from "./constants";
+import { useChessContext } from "../../context/chess-provider";
 
 export default function useSidebarInfo() {
   const activeRef = useRef<HTMLElement>(null);
@@ -15,7 +16,9 @@ export default function useSidebarInfo() {
     chessPositions,
     customChessPositions,
     currentChessPositionIdx,
+    isAnalysisLoading,
   } = useSelector(selectChessState);
+  const { isEngineLoading } = useChessContext();
   const activePosition = useSelector(selectActivePosition);
   const dispatch = useDispatch();
   const isCustom = customChessPositions.length > 0;
@@ -23,6 +26,10 @@ export default function useSidebarInfo() {
     isCustom && chessPositions.length === 0
       ? customChessPositions
       : chessPositions;
+  const analizedCount = useMemo(
+    () => chessPositions.filter((pos) => pos.moveClassification).length,
+    [chessPositions],
+  );
 
   useEffect(() => {
     const isBigScreen = window.innerWidth >= 768;
@@ -139,6 +146,7 @@ export default function useSidebarInfo() {
     navButtons,
     chessPositions,
     customChessPositions,
+    activePosition,
     activePositions,
     currentChessPositionIdx,
     handleChessPosition,
@@ -147,5 +155,8 @@ export default function useSidebarInfo() {
     shouldShowCustomMoves,
     isLatestCustomMove,
     openingName: activePosition?.openingName,
+    isAnalysisLoading,
+    isEngineLoading,
+    analizedCount,
   };
 }

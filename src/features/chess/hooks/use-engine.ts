@@ -12,6 +12,7 @@ import {
 export default function useEngine() {
   const dispatch = useDispatch();
   const [engine, setEngine] = useState<Worker | undefined>();
+  const [isEngineLoading, setIsEngineLoading] = useState(true);
   const isCalculatingRef = useRef(false);
   const sideToMoveRef = useRef<"w" | "b">("w");
   const pendingResolverRef = useRef<(() => void) | null>(null);
@@ -35,7 +36,9 @@ export default function useEngine() {
     worker.onmessage = (e) => {
       const message = e.data;
 
-      console.log("Engine message:", message);
+      if (message.endsWith("readyok")) {
+        setIsEngineLoading(false);
+      }
 
       const evaluationData = getEvaluationDataFromEngineInfo(
         message,
@@ -126,6 +129,7 @@ export default function useEngine() {
 
   return {
     engine,
+    isEngineLoading,
     runBestMoveAnalysis,
   };
 }

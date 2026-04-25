@@ -21,6 +21,7 @@ const initialState: ChessState = {
   customChessPositions: [],
   currentChessPositionIdx: -1,
   isBoardFlipped: false,
+  isAnalysisLoading: false,
   apiGame: undefined,
 };
 
@@ -116,6 +117,7 @@ const chessSlice = createSlice({
           pos.color,
         );
       }
+      state.isAnalysisLoading = false;
     },
     setCurrentChessPositionIdx: (state, action: PayloadAction<number>) => {
       const index = action.payload;
@@ -171,6 +173,9 @@ const chessSlice = createSlice({
 
       state.possibleMoves = { fromSquare: "", toSquares: [] };
     },
+    setAnalysIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isAnalysisLoading = action.payload;
+    },
   },
 });
 
@@ -184,6 +189,7 @@ export const {
   toggleBoardRotation,
   resetChessState,
   undoCustomMove,
+  setAnalysIsLoading,
 } = chessSlice.actions;
 
 export default chessSlice.reducer;
