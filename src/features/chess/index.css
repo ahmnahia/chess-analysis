@@ -57,5 +57,9 @@ div.move-classification.best::before {
 }
 
 div.move-classification.forced::before {
-  @apply content-[""] bg-[url('/icons/right-long.svg')]  bg-green-600;
+  @apply content-[""] bg-[url('/icons/right-long.svg')] bg-green-600;
+}
+
+div.move-classification.opening::before {
+  @apply content-[""] bg-[url('/icons/book-open.svg')] bg-amber-500;
 }

@@ -62,6 +62,7 @@ const chessSlice = createSlice({
         ...state.customChessPositions.map((p) => p.san || ""),
         payload.move?.san || "",
       ];
+      const openingName = getOpeningName(history);
 
       state.customChessPositions.push({
         ...payload.move,
@@ -69,8 +70,9 @@ const chessSlice = createSlice({
         isCheck: payload.isCheck,
         remainingPieces: payload.remainingPieces,
         evaluationView: prevPosition?.evaluationView,
-        openingName: getOpeningName(history),
+        openingName: openingName,
       });
+      state.customLastOpeningName = openingName ? openingName : state.customLastOpeningName;
 
       if (!isBranching) {
         state.currentChessPositionIdx = state.customChessPositions.length - 1;
@@ -115,6 +117,7 @@ const chessSlice = createSlice({
           prev?.bestMove || "",
           payload.legalMovesCount || 0,
           pos.color,
+          pos.openingName,
         );
       }
       state.isAnalysisLoading = false;
@@ -136,12 +139,14 @@ const chessSlice = createSlice({
       state.customChessPositions = [];
       state.chessPositions = action.payload.chessPositions.map(
         (pos, idx, arr) => {
-          const history = arr
-            .slice(0, idx + 1)
-            .map((p) => p.san || "")
+          const history = arr.slice(0, idx + 1).map((p) => p.san || "");
+          const openingName = getOpeningName(history);
+          state.lastOpeningName = openingName
+            ? openingName
+            : state.lastOpeningName;
           return {
             ...pos,
-            openingName: getOpeningName(history),
+            openingName: openingName,
           };
         },
       );
@@ -155,20 +160,32 @@ const chessSlice = createSlice({
     resetChessState: () => initialState,
     undoCustomMove: (state, action: PayloadAction<number>) => {
       const isBranching = state.chessPositions.length > 0;
+      const { customChessPositions } = state;
 
       if (action.payload === -1 && isBranching) {
         state.customChessPositions = [];
         state.possibleMoves = { fromSquare: "", toSquares: [] };
+        state.lastOpeningName = null;
         return;
       }
 
-      const index = isBranching
-        ? state.customChessPositions.length - 1
+      const targetIndex = isBranching
+        ? customChessPositions.length - 1
         : action.payload;
-      state.customChessPositions.splice(isBranching ? index : index + 1);
+      const spliceStart = isBranching ? targetIndex : targetIndex + 1;
+      customChessPositions.splice(spliceStart);
 
       if (!isBranching) {
-        state.currentChessPositionIdx = index;
+        state.currentChessPositionIdx = targetIndex;
+      }
+
+      if (customChessPositions.length === 0) {
+        state.customLastOpeningName = null;
+      } else {
+        const lastCustomPosition =
+          customChessPositions[customChessPositions.length - 1];
+        state.customLastOpeningName =
+          lastCustomPosition?.openingName || state.customLastOpeningName;
       }
 
       state.possibleMoves = { fromSquare: "", toSquares: [] };

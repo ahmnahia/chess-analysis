@@ -17,6 +17,8 @@ export default function useSidebarInfo() {
     customChessPositions,
     currentChessPositionIdx,
     isAnalysisLoading,
+    lastOpeningName,
+    customLastOpeningName,
   } = useSelector(selectChessState);
   const { isEngineLoading } = useChessContext();
   const activePosition = useSelector(selectActivePosition);
@@ -30,6 +32,22 @@ export default function useSidebarInfo() {
     () => chessPositions.filter((pos) => pos.moveClassification).length,
     [chessPositions],
   );
+  const openingName = useMemo(() => {
+    if (currentChessPositionIdx === -1) {
+      return null;
+    } else if (customChessPositions.length > 0) {
+      return activePosition?.openingName || customLastOpeningName;
+    } else if (chessPositions.length > 0) {
+      return activePosition?.openingName || lastOpeningName;
+    }
+    return null;
+  }, [
+    activePosition,
+    customLastOpeningName,
+    lastOpeningName,
+    customChessPositions.length,
+    chessPositions.length,
+  ]);
 
   useEffect(() => {
     const isBigScreen = window.innerWidth >= 768;
@@ -154,7 +172,7 @@ export default function useSidebarInfo() {
     isMoveActive,
     shouldShowCustomMoves,
     isLatestCustomMove,
-    openingName: activePosition?.openingName,
+    openingName,
     isAnalysisLoading,
     isEngineLoading,
     analizedCount,

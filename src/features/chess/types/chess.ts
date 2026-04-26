@@ -15,6 +15,8 @@ export type EvaluationView = {
 
 export type Arrow = { startSquare: string; endSquare: string; color: string };
 
+export type OpeningName = string | null;
+
 export interface ChessState {
   squareStyles: Record<string, React.CSSProperties>;
   possibleMoves: PossibleMoves;
@@ -24,6 +26,8 @@ export interface ChessState {
   isBoardFlipped: boolean;
   isAnalysisLoading: boolean;
   apiGame?: ChessComGame;
+  lastOpeningName?: OpeningName;
+  customLastOpeningName?: OpeningName;
 }
 
 export type ChessBoard = ({
@@ -46,7 +50,7 @@ export interface ChessPosition extends Partial<Move> {
   isCalculatingBestMove: boolean;
   isCheck?: boolean;
   remainingPieces?: RemainingPieces;
-  openingName?: string;
+  openingName?: OpeningName;
 }
 
 export type ChessPositions = ChessPosition[];

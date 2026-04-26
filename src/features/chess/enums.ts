@@ -5,6 +5,7 @@ export enum ChessClassNames {
 }
 
 export enum MoveClassification {
+  OPENING = "opening",
   FORCED = "forced",
   INACCURACY = "inaccuracy",
   MISTAKE = "mistake",

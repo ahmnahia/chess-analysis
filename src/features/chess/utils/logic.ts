@@ -2,6 +2,7 @@ import { Color } from "chess.js";
 import { MoveClassification } from "../enums";
 import {
   ChessBoard,
+  OpeningName,
   RemainingPieces,
 } from "../types/chess";
 import { EMPTY_PIECE_COUNT } from "../components/GamePlayerInfo/constants";
@@ -78,9 +79,14 @@ export const getMoveClassification = (
   bestMove: string,
   legalMovesCount: number,
   playedBy: Color,
+  openingName?: OpeningName,
 ): MoveClassification => {
   const normalizedPlayedMove = playedMove.trim().toLowerCase();
   const normalizedBestMove = bestMove.trim().toLowerCase();
+
+  if (openingName) {
+    return MoveClassification.OPENING;
+  }
 
   if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
     return MoveClassification.BEST;
@@ -151,9 +157,9 @@ export function formatMovesToOpeningKey(history: string[]): string {
   return parts.join(" ");
 }
 
-export function getOpeningName(history: string[]): string | undefined {
+export function getOpeningName(history: string[]): OpeningName {
   const openingMap = openingNames as Record<string, string>;
-  let lastFoundName: string | undefined = undefined;
+  let lastFoundName: OpeningName = null;
 
   for (let i = 1; i <= history.length; i++) {
     const subHistory = history.slice(0, i);
@@ -162,6 +168,7 @@ export function getOpeningName(history: string[]): string | undefined {
     if (openingMap[key]) {
       lastFoundName = openingMap[key];
     } else {
+      lastFoundName = null;
       break;
     }
   }
