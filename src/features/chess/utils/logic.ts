@@ -5,7 +5,7 @@ import {
   OpeningName,
   RemainingPieces,
 } from "../types/chess";
-import { EMPTY_PIECE_COUNT } from "../components/GamePlayerInfo/constants";
+import { EMPTY_PIECE_COUNT } from "../components/custom-chess-board/components/GamePlayerInfo/constants";
 import openingNames from "../../../../public/opening-names.json";
 
 export const getAdaptiveEngineConfig = () => {

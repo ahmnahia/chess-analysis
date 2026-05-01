@@ -3,8 +3,9 @@ import { useSelector } from "react-redux";
 import { Chessboard } from "react-chessboard";
 import { selectChessState } from "../../chess-slice";
 import useChessBoard from "./use-chess-board";
-import GamePlayerInfo from "../GamePlayerInfo";
+import GamePlayerInfo from "./components/GamePlayerInfo";
 import { cn } from "@/lib/utils";
+import PieceSelector from "./components/piece-selector";
 
 export default function CustomChessBoard() {
   const {
@@ -17,6 +18,11 @@ export default function CustomChessBoard() {
     onPieceDrag,
     onPieceDrop,
     onSquareClick,
+    promotionPending,
+    promotionColor,
+    onPromotionPieceSelect,
+    chessBoardRef,
+    cancelPromotionSelection,
   } = useChessBoard();
   const { isBoardFlipped } = useSelector(selectChessState);
 
@@ -34,7 +40,7 @@ export default function CustomChessBoard() {
           capturedDiff={blackCapturedDiff}
         />
       </div>
-      <div className="max-w-[80vh]">
+      <div ref={chessBoardRef} className="max-w-[80vh] relative">
         <Chessboard
           options={{
             position: currentPosition,
@@ -46,6 +52,22 @@ export default function CustomChessBoard() {
             boardOrientation: isBoardFlipped ? "black" : "white",
           }}
         />
+        {promotionPending && promotionColor ? (
+          <>
+            <div
+              className="absolute inset-0 z-10 bg-black/30"
+              aria-hidden
+            />
+            <PieceSelector
+              isBoardFlipped={isBoardFlipped}
+              color={promotionColor}
+              onPieceSelect={onPromotionPieceSelect}
+              chessBoardRef={chessBoardRef}
+              promotionPendingToSquare={promotionPending.to}
+              cancelPromotionSelection={cancelPromotionSelection}
+            />
+          </>
+        ) : null}
       </div>
       <div className={cn(isBoardFlipped ? "mb-4" : "mt-4")}>
         <GamePlayerInfo

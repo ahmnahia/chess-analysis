@@ -8,6 +8,8 @@ import {
   ChessState,
   EvaluationView,
   RemainingPieces,
+  Arrow,
+  PromotionPending,
 } from "./types/chess";
 import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
@@ -22,6 +24,8 @@ const initialState: ChessState = {
   currentChessPositionIdx: -1,
   isBoardFlipped: false,
   isAnalysisLoading: false,
+  arrows: [],
+  promotionPending: null,
   apiGame: undefined,
 };
 
@@ -157,6 +161,12 @@ const chessSlice = createSlice({
     toggleBoardRotation: (state) => {
       state.isBoardFlipped = !state.isBoardFlipped;
     },
+    setArrows: (state, action: PayloadAction<Arrow[]>) => {
+      state.arrows = action.payload;
+    },
+    setPromotionPending: (state, action: PayloadAction<PromotionPending>) => {
+      state.promotionPending = action.payload;
+    },
     resetChessState: () => initialState,
     undoCustomMove: (state, action: PayloadAction<number>) => {
       const isBranching = state.chessPositions.length > 0;
@@ -204,6 +214,8 @@ export const {
   setCurrentChessPositionIdx,
   loadPositionsFromApi,
   toggleBoardRotation,
+  setArrows,
+  setPromotionPending,
   resetChessState,
   undoCustomMove,
   setAnalysIsLoading,

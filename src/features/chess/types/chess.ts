@@ -14,6 +14,7 @@ export type EvaluationView = {
 };
 
 export type Arrow = { startSquare: string; endSquare: string; color: string };
+export type PromotionPending = { from: string; to: string } | null;
 
 export type OpeningName = string | null;
 
@@ -25,6 +26,8 @@ export interface ChessState {
   currentChessPositionIdx: number;
   isBoardFlipped: boolean;
   isAnalysisLoading: boolean;
+  arrows: Arrow[];
+  promotionPending: PromotionPending;
   apiGame?: ChessComGame;
   lastOpeningName?: OpeningName;
   customLastOpeningName?: OpeningName;

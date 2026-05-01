@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { SidebarTrigger } from "./ui/sidebar";
-import ThemeToggle from "./ThemeToggle";
+import ThemeToggle from "./theme-toggle";
 
 export default function Header() {
   return (

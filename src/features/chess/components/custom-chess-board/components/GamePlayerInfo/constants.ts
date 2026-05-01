@@ -1,5 +1,5 @@
 import { PieceSymbol } from "chess.js";
-import { PiecesCount } from "../../types/chess";
+import { PiecesCount } from "../../../../types/chess";
 
 export const GAME_PLAYER_INFO_COLORS = {
   orange: {

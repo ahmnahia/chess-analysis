@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { PromotionPiece } from "./components/piece-selector/enum";
 import { useDispatch, useSelector } from "react-redux";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
 import {
@@ -9,6 +10,8 @@ import {
   selectActivePosition,
   selectPreviousPosition,
   setAnalysIsLoading,
+  setArrows,
+  setPromotionPending,
 } from "../../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
 import { Square, Color } from "chess.js";
@@ -22,8 +25,15 @@ import {
   clearAllSquareClassNames,
 } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
-import { Arrow, ChessPosition, PiecesCount, PossibleMoves } from "../../types/chess";
-import { PIECES_SCORE, TOTAL_COUNT_PIECES } from "../GamePlayerInfo/constants";
+import {
+  ChessPosition,
+  PiecesCount,
+  PossibleMoves,
+} from "../../types/chess";
+import {
+  PIECES_SCORE,
+  TOTAL_COUNT_PIECES,
+} from "./components/GamePlayerInfo/constants";
 import "@/lib/bigintToJson";
 
 export default function useChessBoard() {
@@ -37,10 +47,11 @@ export default function useChessBoard() {
     apiGame,
     currentChessPositionIdx,
     isBoardFlipped,
+    arrows,
+    promotionPending,
   } = useSelector(selectChessState);
   const activePosition = useSelector(selectActivePosition);
   const previousPosition = useSelector(selectPreviousPosition);
-  const [arrows, setArrows] = useState<Arrow[]>([]);
   const previousPossibleMovesRef = useRef<PossibleMoves>({
     fromSquare: "",
     toSquares: [],
@@ -48,6 +59,7 @@ export default function useChessBoard() {
   const previousTurnRef = useRef<Color>("w");
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
   const prevIsBoardFlippedRef = useRef<boolean>(isBoardFlipped);
+  const chessBoardRef = useRef<HTMLDivElement>(null);
 
   const { whiteCapturedDiff, blackCapturedDiff } = useMemo(() => {
     const remainingPiecesWhite = activePosition?.remainingPieces?.black;
@@ -83,12 +95,12 @@ export default function useChessBoard() {
       if (bestMove && bestMove !== "0000" && bestMove.length >= 4) {
         const startSquare = bestMove.slice(0, 2);
         const endSquare = bestMove.slice(2, 4);
-        setArrows([{ startSquare, endSquare, color: "#00ff00" }]);
+        dispatch(setArrows([{ startSquare, endSquare, color: "#00ff00" }]));
       } else {
-        setArrows([]);
+        dispatch(setArrows([]));
       }
     }
-  }, [previousPosition]);
+  }, [dispatch, previousPosition]);
 
   useEffect(() => {
     // syncing chessjs state
@@ -159,18 +171,20 @@ export default function useChessBoard() {
     return () => clearTimeout(timeout);
   }, [isBoardFlipped, activePosition, possibleMoves, chessJs]);
 
-  const applyMoveAndAnalyze = (from: string, to: string) => {
+  function finalizeMoveAndAnalyze(
+    from: string,
+    to: string,
+    promotion?: PromotionPiece,
+  ): boolean {
     const nextIndex = customChessPositions.length;
     const legalMovesCount = chessJs.moves().length;
 
-    const moved = chessJs.move({
-      from,
-      to,
-      promotion: "q",
-    });
+    const moved = chessJs.move(
+      promotion ? { from: from, to: to, promotion } : { from: from, to: to },
+    );
 
     if (!moved) {
-      return;
+      return false;
     }
 
     dispatch(setAnalysIsLoading(true));
@@ -189,7 +203,42 @@ export default function useChessBoard() {
         remainingPieces,
       }),
     );
-  };
+    return true;
+  }
+
+  function applyMoveAndAnalyze(from: string, to: string): boolean {
+    const piece = chessJs.get(from as Square);
+    const needsPromotion =
+      piece?.type === "p" &&
+      possibleMoves.toSquares.includes(to) &&
+      ((piece.color === "w" && to[1] === "8") ||
+        (piece.color === "b" && to[1] === "1"));
+
+    if (needsPromotion) {
+      dispatch(setPromotionPending({ from, to }));
+      dispatch(
+        setPossibleMoves({
+          possibleMoves: { fromSquare: "", toSquares: [] },
+          turn: chessJs.turn(),
+        }),
+      );
+      return false;
+    }
+
+    return finalizeMoveAndAnalyze(from, to);
+  }
+
+  function onPromotionPieceSelect(piece: PromotionPiece) {
+    if (!promotionPending) return;
+
+    const { from, to } = promotionPending;
+    dispatch(setPromotionPending(null));
+    finalizeMoveAndAnalyze(from, to, piece);
+  }
+
+  function cancelPromotionSelection() {
+    dispatch(setPromotionPending(null));
+  }
 
   function onSquareClick(args: SquareHandlerArgs) {
     const filteredPossibleMoves = filterPossibleToSquaresMoves(possibleMoves);
@@ -228,8 +277,7 @@ export default function useChessBoard() {
     }
 
     try {
-      applyMoveAndAnalyze(sourceSquare, targetSquare);
-      return true;
+      return applyMoveAndAnalyze(sourceSquare, targetSquare);
     } catch {
       return false;
     }
@@ -261,5 +309,10 @@ export default function useChessBoard() {
     onPieceDrag,
     onPieceDrop,
     onSquareClick,
+    promotionPending,
+    promotionColor: promotionPending ? chessJs.turn() : null,
+    onPromotionPieceSelect,
+    chessBoardRef,
+    cancelPromotionSelection,
   };
 }

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { GAME_PLAYER_INFO_COLORS } from "./constants";
 import { GamePlayInfoColors } from "./types";
-import { PiecesCount } from "../../types/chess";
+import { PiecesCount } from "../../../../types/chess";
 import { Color } from "chess.js";
 import useGamePlayerInfo from "./use-game-player-info";
 import { ReactSVG } from "react-svg";
