@@ -1,6 +1,4 @@
 "use client";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,67 +11,26 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { chessComApi } from "../../api/chess-com";
-import { ChessComGame } from "../../types/chess-com";
-import { loadPositionsFromApi } from "../../chess-slice";
-import { useChessContext } from "../../context/chess-provider";
-import { Chess } from "chess.js";
-import { getRemainingAndCapturedPieces } from "../../utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Platform } from "./enum";
+import useProfileModal from "./use-profile-modal";
+import { GameRow } from "./components/game-row";
+import { GAMES_PREVIEW_LIMIT } from "./constants";
 
-interface UserProfileModalProps {
-  onGamesLoaded?: (games: ChessComGame[]) => void;
-}
-
-export default function UserProfileModal({
-  onGamesLoaded,
-}: UserProfileModalProps) {
-  const dispatch = useDispatch();
-  const { chessJs, calculateBestMovesForPositions } = useChessContext();
-  const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [games, setGames] = useState<ChessComGame[]>([]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!username.trim()) {
-      setError("Please enter a username");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // fetch latest games from Chess.com
-      const games = await chessComApi.getLatestGames(username, 10);
-
-      if (games.length === 0) {
-        setError("No games found for this username");
-        return;
-      }
-
-      // Call the callback with the fetched games
-      //   onGamesLoaded?.(games);
-
-      // Close the modal
-      //   setIsOpen(false);
-      //   setUsername("");
-      setGames(games);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch games");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    setUsername("");
-    setError(null);
-  };
+export default function UserProfileModal() {
+  const {
+    username,
+    loading,
+    error,
+    isOpen,
+    games,
+    platform,
+    setIsOpen,
+    handleSubmit,
+    handleGameClick,
+    onPlatformChange,
+    onInputChange,
+  } = useProfileModal();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -83,22 +40,30 @@ export default function UserProfileModal({
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] z-50">
+        <div className="flex justify-center">
+          <Tabs value={platform} onValueChange={onPlatformChange}>
+            <TabsList>
+              <TabsTrigger value={Platform.ChessCom}>Chess.com</TabsTrigger>
+              <TabsTrigger value={Platform.Lichess}>Lichess</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
         <DialogHeader>
-          <DialogTitle>Load Games from Chess.com</DialogTitle>
+          <DialogTitle>Load Games from {platform}</DialogTitle>
           <DialogDescription>
-            Enter a Chess.com username to load their latest games.
+            Enter a {platform} username to load their latest games.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
             <div className="grid gap-3">
-              <Label htmlFor="username">Chess.com Username</Label>
+              <Label htmlFor="username">{platform} username</Label>
               <Input
                 id="username"
                 name="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={onInputChange}
                 placeholder="Enter username (e.g., hikaru)"
                 disabled={loading}
               />
@@ -117,59 +82,21 @@ export default function UserProfileModal({
             </Button>
           </DialogFooter>
         </form>
+
         <div>
-          {games.length > 0 && <p className="font-bold">Last 10 Games</p>}
-          {games.map((game) => {
-            const result =
-              game.white.username === username
-                ? game.white.result
-                : game.black.result;
-            const resultColor =
-              result === "win"
-                ? "text-green-500"
-                : result === "loss" ||
-                    result === "checkmated" ||
-                    result === "timeout" ||
-                    result === "resigned"
-                  ? "text-red-500"
-                  : "text-zinc-500";
-            return (
-              <div className="underline cursor-pointer" key={game.url}>
-                <button
-                  onClick={async () => {
-                    chessJs.loadPgn(game.pgn);
-                    const history = chessJs.history({ verbose: true });
-                    const tempChess = new Chess();
-                    const chessPositions = [
-                      ...history.map((move) => {
-                        tempChess.move(move);
-                        return {
-                          ...move,
-                          isCalculatingBestMove: true,
-                          remainingPieces: getRemainingAndCapturedPieces(
-                            tempChess.board(),
-                          ),
-                        };
-                      }),
-                    ];
-                    dispatch(
-                      loadPositionsFromApi({
-                        chessPositions,
-                        game,
-                        isBoardFlipped: username === game.black.username,
-                      }),
-                    );
-                    await calculateBestMovesForPositions(chessPositions);
-                  }}
-                >
-                  <h3>
-                    {game.black.username} - {game.white.username} (
-                    <span className={resultColor}>{result}</span>)
-                  </h3>
-                </button>
-              </div>
-            );
-          })}
+          {games.length > 0 ? (
+            <p className="font-bold mb-1">Last {GAMES_PREVIEW_LIMIT} Games</p>
+          ) : null}
+          <div className="max-h-[300px] max-sm:max-h-[200px] overflow-y-auto pr-1">
+            {games.slice(0, GAMES_PREVIEW_LIMIT).map((game, index) => (
+              <GameRow
+                key={`${game.white.username}-${game.black.username}-${index}`}
+                game={game}
+                searchedUsername={username}
+                onSelect={handleGameClick}
+              />
+            ))}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

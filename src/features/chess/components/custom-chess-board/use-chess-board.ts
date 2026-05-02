@@ -179,9 +179,14 @@ export default function useChessBoard() {
     const nextIndex = customChessPositions.length;
     const legalMovesCount = chessJs.moves().length;
 
-    const moved = chessJs.move(
-      promotion ? { from: from, to: to, promotion } : { from: from, to: to },
-    );
+    let moved;
+    try {
+      moved = chessJs.move(
+        promotion ? { from: from, to: to, promotion } : { from: from, to: to },
+      );
+    } catch {
+      return false;
+    }
 
     if (!moved) {
       return false;

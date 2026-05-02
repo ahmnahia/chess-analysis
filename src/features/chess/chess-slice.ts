@@ -13,8 +13,8 @@ import {
 } from "./types/chess";
 import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
-import { ChessComGame } from "./types/chess-com";
 import { getOpeningName } from "./utils/";
+import { GameInfo } from "./components/user-profile-modal/types";
 
 const initialState: ChessState = {
   squareStyles: {},
@@ -136,7 +136,7 @@ const chessSlice = createSlice({
       state,
       action: PayloadAction<{
         chessPositions: ChessPositions;
-        game: ChessComGame;
+        game: GameInfo;
         isBoardFlipped: boolean;
       }>,
     ) => {

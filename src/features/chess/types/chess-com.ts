@@ -1,8 +1,21 @@
+export type Result =
+  | "win"
+  | "checkmated"
+  | "agreed"
+  | "repetition"
+  | "timeout"
+  | "resigned"
+  | "stalemate"
+  | "lose"
+  | "insufficient"
+  | "50move"
+  | "abandoned";
+
 type Player = {
   username: string;
   rating: number;
-  result: string;
-}
+  result: Result;
+};
 
 export interface ChessComGame {
   url: string;
@@ -12,31 +25,10 @@ export interface ChessComGame {
   rated: boolean;
   fen: string;
   time_class: string;
-  rules: string;
   black: Player;
   white: Player;
-  result: string;
-  uuid: string;
 }
 
 export interface ChessComApiResponse {
   games: ChessComGame[];
-}
-
-export interface ChessComGameDetail {
-  url: string;
-  pgn: string;
-  time_control: string;
-  end_time: number;
-  rated: boolean;
-  fen: string;
-  time_class: string;
-  rules: string;
-  white: string;
-  black: string;
-  result: string;
-  uuid: string;
-  moves: string;
-  tournament: string;
-  match: string;
 }

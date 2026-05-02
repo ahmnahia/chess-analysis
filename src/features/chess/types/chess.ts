@@ -1,6 +1,6 @@
 import { Chess, Color, Move, PieceSymbol, Square } from "chess.js";
 import { MoveClassification } from "../enums";
-import { ChessComGame } from "./chess-com";
+import { GameInfo } from "../components/user-profile-modal/types";
 
 export type ChessJs = InstanceType<typeof Chess>;
 
@@ -28,7 +28,7 @@ export interface ChessState {
   isAnalysisLoading: boolean;
   arrows: Arrow[];
   promotionPending: PromotionPending;
-  apiGame?: ChessComGame;
+  apiGame?: GameInfo;
   lastOpeningName?: OpeningName;
   customLastOpeningName?: OpeningName;
 }
