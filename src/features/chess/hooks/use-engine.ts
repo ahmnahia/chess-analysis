@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setBestMove } from "../chess-slice";
+import { EvaluationView } from "../types/chess";
 import {
   chooseEngine,
   getAdaptiveEngineConfig,
@@ -17,9 +18,10 @@ export default function useEngine() {
   const sideToMoveRef = useRef<"w" | "b">("w");
   const pendingResolverRef = useRef<(() => void) | null>(null);
   const pendingTargetIndexRef = useRef<number | null>(null);
-  const latestEvaluationViewRef = useRef({
+  const latestEvaluationViewRef = useRef<EvaluationView>({
     whiteValue: 0,
     whiteShare: 0.5,
+    mateIn: null,
   });
   const movesCountChessJsRef = useRef<number>(0);
 
@@ -114,6 +116,7 @@ export default function useEngine() {
       latestEvaluationViewRef.current = {
         whiteValue: 0,
         whiteShare: 0.5,
+        mateIn: null,
       };
 
       return new Promise<void>((resolve) => {

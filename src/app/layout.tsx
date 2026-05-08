@@ -18,12 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="dark"> 
-          <SidebarProvider className="flex-col">
-            <Header />
-            <AppSidebar />
-            <SidebarInset>{children}</SidebarInset>
-          </SidebarProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark">
+            <SidebarProvider className="flex-col">
+              <Header />
+              <AppSidebar />
+              <SidebarInset>{children}</SidebarInset>
+            </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

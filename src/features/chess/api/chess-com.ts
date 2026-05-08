@@ -10,7 +10,7 @@ export async function getLatestGames(
   const month = now.getMonth() + 1;
 
   const response = await fetch(
-    `${CHESS_COM_API_BASE}/player/${username}/games/${year}/${(month - 1).toString().padStart(2, "0")}`,
+    `${CHESS_COM_API_BASE}/player/${username}/games/${year}/${(month).toString().padStart(2, "0")}`,
   );
 
   if (!response.ok) {

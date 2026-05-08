@@ -46,6 +46,7 @@ export const getEvaluationDataFromEngineInfo = (
 ): {
   whiteValue: number;
   whiteShare: number;
+  mateIn?: number | null;
 } | null => {
   if (!infoMessage.startsWith("info") || !infoMessage.includes("score")) {
     return null;
@@ -61,6 +62,8 @@ export const getEvaluationDataFromEngineInfo = (
     type === "cp" ? value / 100 : value > 0 ? 100 : -100;
   const whiteValue =
     sideToMove === "w" ? scoreForSideToMove : -scoreForSideToMove;
+  const mateIn =
+    type === "mate" ? (sideToMove === "w" ? value : -value) : null;
 
   const sigmoid = (input: number) => 1 / (1 + Math.exp(-0.7 * input));
   const rawWhiteShare = sigmoid(whiteValue);
@@ -69,6 +72,7 @@ export const getEvaluationDataFromEngineInfo = (
   return {
     whiteValue,
     whiteShare,
+    mateIn,
   };
 };
 

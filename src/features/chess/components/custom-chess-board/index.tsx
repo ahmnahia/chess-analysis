@@ -24,7 +24,8 @@ export default function CustomChessBoard() {
     chessBoardRef,
     cancelPromotionSelection,
   } = useChessBoard();
-  const { isBoardFlipped } = useSelector(selectChessState);
+  const state = useSelector(selectChessState);
+  const { isBoardFlipped } = state;
 
   return (
     <div
@@ -54,10 +55,7 @@ export default function CustomChessBoard() {
         />
         {promotionPending && promotionColor ? (
           <>
-            <div
-              className="absolute inset-0 z-10 bg-black/30"
-              aria-hidden
-            />
+            <div className="absolute inset-0 z-10 bg-black/30" />
             <PieceSelector
               isBoardFlipped={isBoardFlipped}
               color={promotionColor}

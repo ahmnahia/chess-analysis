@@ -11,6 +11,7 @@ export type PossibleMoves = { fromSquare: string; toSquares: string[] };
 export type EvaluationView = {
   whiteValue: number;
   whiteShare: number;
+  mateIn?: number | null;
 };
 
 export type Arrow = { startSquare: string; endSquare: string; color: string };

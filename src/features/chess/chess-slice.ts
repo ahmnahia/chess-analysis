@@ -76,7 +76,9 @@ const chessSlice = createSlice({
         evaluationView: prevPosition?.evaluationView,
         openingName: openingName,
       });
-      state.customLastOpeningName = openingName ? openingName : state.customLastOpeningName;
+      state.customLastOpeningName = openingName
+        ? openingName
+        : state.customLastOpeningName;
 
       if (!isBranching) {
         state.currentChessPositionIdx = state.customChessPositions.length - 1;
@@ -130,6 +132,7 @@ const chessSlice = createSlice({
       const index = action.payload;
       if (index >= -1 && index < state.chessPositions.length) {
         state.currentChessPositionIdx = index;
+        state.customChessPositions = [];
       }
     },
     loadPositionsFromApi: (

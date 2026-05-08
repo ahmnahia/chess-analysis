@@ -7,8 +7,9 @@ export function useEvaluationBar() {
   const activePosition = useSelector(selectActivePosition);
 
   const formatEvaluation = (value: number): string => {
-    if (Math.abs(value) >= 99) {
-      return value > 0 ? "+M" : "-M";
+    const mateIn = evaluationView.mateIn;
+    if (mateIn != null) {
+      return `M${Math.abs(mateIn)}`;
     }
 
     const rounded = Math.round(value * 10) / 10;
@@ -20,10 +21,12 @@ export function useEvaluationBar() {
       ? {
           whiteValue: 0,
           whiteShare: 0.5,
+          mateIn: null,
         }
       : (activePosition?.evaluationView ?? {
           whiteValue: 0,
           whiteShare: 0.5,
+          mateIn: null,
         });
 
   const blackValue = -evaluationView.whiteValue;

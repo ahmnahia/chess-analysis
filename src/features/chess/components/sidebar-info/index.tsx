@@ -1,5 +1,5 @@
 "use client";
-import React, { Fragment, ReactNode, ForwardedRef } from "react";
+import React, { Fragment } from "react";
 import { ReactSVG } from "react-svg";
 import useSidebarInfo from "./use-sidebar-info";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { ClearBoardModal } from "../clear-board-modal";
 import MoveButton from "./components/move-button/index";
 import { Spinner } from "@/components/ui/spinner";
 import Progress from "./components/progress";
+import EvaluationGraph from "./components/evaluation-graph";
 
 export default function SidebarInfo() {
   const {
@@ -26,10 +27,11 @@ export default function SidebarInfo() {
     isAnalysisLoading,
     isEngineLoading,
     analizedCount,
+    isAnalysisCompleteForMainLine,
   } = useSidebarInfo();
 
   return (
-    <div className="h-full w-[300px] max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
+    <div className="h-full max-w-[500px] max-lg:max-w-full max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
       <div className="flex flex-col items-center justify-center gap-1">
         <div className="flex items-center gap-2">
           <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
@@ -65,11 +67,10 @@ export default function SidebarInfo() {
         )}
       </div>
 
-      <div className="my-6 max-h-[40vh] overflow-y-auto">
+      <div className="my-3 max-h-[40vh] overflow-y-auto">
         {activePositions.length > 0 ? (
           activePositions.map((pos, idx) => {
             if (idx % 2 !== 0) return null;
-
             return (
               <div
                 key={pos.before ?? "" + idx + pos.san}
@@ -138,6 +139,8 @@ export default function SidebarInfo() {
           </div>
         )}
       </div>
+
+      {isAnalysisCompleteForMainLine && <EvaluationGraph />}
 
       <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-md:gap-x-3 max-[350px]:gap-x-1! px-4 max-md:px-1 max-md:fixed max-md:w-full max-md:bg-zinc-100 dark:max-md:bg-zinc-800 max-md:left-0 max-md:bottom-0 max-md:py-2 max-md:z-50">
         {navButtons.map((button) => (

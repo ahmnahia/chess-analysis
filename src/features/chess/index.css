@@ -13,7 +13,7 @@
 }
 
 div.move-classification::before {
-  @apply w-[40px] max-md:w-[20px] h-[40px] max-md:h-[20px] bg-size-[30px_30px] max-md:bg-size-[15px_15px] bg-center bg-no-repeat text-white absolute -right-4 max-md:-right-2 -top-3 max-md:-top-1 flex items-center justify-center rounded-full text-lg max-md:text-xs font-bold z-20;
+  @apply w-[40px] max-md:w-[20px] h-[40px] max-md:h-[20px] bg-size-[30px_30px] max-md:bg-size-[15px_15px] bg-center bg-no-repeat text-white absolute -right-4 max-md:-right-2 -top-3 max-md:-top-1 flex items-center justify-center rounded-full text-lg max-md:text-xs font-bold z-30;
 }
 
 div[data-column="h"].move-classification::before {

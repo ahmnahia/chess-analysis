@@ -159,6 +159,10 @@ export default function useSidebarInfo() {
     ],
   );
 
+  const isAnalysisCompleteForMainLine =
+    chessPositions.length > 0 &&
+    analizedCount === chessPositions.length;
+
   return {
     activeRef,
     navButtons,
@@ -176,5 +180,6 @@ export default function useSidebarInfo() {
     isAnalysisLoading,
     isEngineLoading,
     analizedCount,
+    isAnalysisCompleteForMainLine,
   };
 }
