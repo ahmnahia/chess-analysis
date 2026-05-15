@@ -25,15 +25,11 @@ import {
   clearAllSquareClassNames,
 } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
-import {
-  ChessPosition,
-  PiecesCount,
-  PossibleMoves,
-} from "../../types/chess";
+import { ChessPosition, PiecesCount, PossibleMoves } from "../../types/chess";
 import {
   PIECES_SCORE,
   TOTAL_COUNT_PIECES,
-} from "./components/GamePlayerInfo/constants";
+} from "./components/game-player-info/constants";
 import "@/lib/bigintToJson";
 
 export default function useChessBoard() {
@@ -215,7 +211,7 @@ export default function useChessBoard() {
     const piece = chessJs.get(from as Square);
     const needsPromotion =
       piece?.type === "p" &&
-      possibleMoves.toSquares.includes(to) &&
+      possibleMoves.toSquares.some((item) => item.includes(to)) &&
       ((piece.color === "w" && to[1] === "8") ||
         (piece.color === "b" && to[1] === "1"));
 

@@ -3,7 +3,7 @@ import React, { Fragment } from "react";
 import { ReactSVG } from "react-svg";
 import useSidebarInfo from "./use-sidebar-info";
 import { Button } from "@/components/ui/button";
-import { SIDEBAR_INFO_CLASSES } from "./constants";
+import { MOVE_CLASSIFICATION_TEXTS, SIDEBAR_INFO_CLASSES } from "./constants";
 import UserProfileModal from "../user-profile-modal";
 import { cn } from "@/lib/utils";
 import { ClearBoardModal } from "../clear-board-modal";
@@ -11,6 +11,9 @@ import MoveButton from "./components/move-button/index";
 import { Spinner } from "@/components/ui/spinner";
 import Progress from "./components/progress";
 import EvaluationGraph from "./components/evaluation-graph";
+import { selectActivePosition } from "../../chess-slice";
+import { useSelector } from "react-redux";
+import { MoveClassification } from "../../enums";
 
 export default function SidebarInfo() {
   const {
@@ -28,6 +31,9 @@ export default function SidebarInfo() {
     isEngineLoading,
     analizedCount,
     isAnalysisCompleteForMainLine,
+    previousBestMove,
+    currentBestMove,
+    activePosition,
   } = useSidebarInfo();
 
   return (
@@ -65,8 +71,49 @@ export default function SidebarInfo() {
             />
           </div>
         )}
+        {activePosition?.moveClassification && (
+          <div className="my-2 flex w-full flex-row flex-wrap items-center justify-center gap-x-2 gap-y-2 px-4 py-1">
+            <div className="inline-flex max-w-full shrink-0 items-center gap-1">
+              <div
+                className={cn(
+                  "move-classification",
+                  activePosition.moveClassification,
+                  SIDEBAR_INFO_CLASSES.moveClassificationBadge,
+                )}
+              />
+              <span className="text-sm leading-none flex items-center">
+                <ReactSVG
+                  src={`/icons/piece-${currentBestMove?.iconLetter?.toLowerCase()}.svg`}
+                  className={currentBestMove?.iconClassName}
+                />
+                {currentBestMove?.move}{" "}
+                {MOVE_CLASSIFICATION_TEXTS[activePosition.moveClassification]}
+              </span>
+            </div>
+            {activePosition.moveClassification !== MoveClassification.BEST &&
+              activePosition.moveClassification !==
+                MoveClassification.OPENING && (
+                <div className="inline-flex max-w-full shrink-0 items-center gap-1">
+                  <div
+                    className={cn(
+                      "move-classification",
+                      MoveClassification.BEST,
+                      SIDEBAR_INFO_CLASSES.moveClassificationBadge,
+                    )}
+                  />
+                  <span className="text-sm leading-none flex items-center">
+                    <ReactSVG
+                      src={`/icons/piece-${previousBestMove?.iconLetter?.toLowerCase()}.svg`}
+                      className={previousBestMove?.iconClassName}
+                    />
+                    {previousBestMove?.move}{" "}
+                    {MOVE_CLASSIFICATION_TEXTS.BEST_ALTERNATIVE}
+                  </span>
+                </div>
+              )}
+          </div>
+        )}
       </div>
-
       <div className="my-3 max-h-[40vh] overflow-y-auto">
         {activePositions.length > 0 ? (
           activePositions.map((pos, idx) => {
@@ -80,14 +127,12 @@ export default function SidebarInfo() {
                 )}
               >
                 <span className="w-1/5">{Math.floor(idx / 2) + 1}.</span>
-
                 <MoveButton
                   ref={activeRef}
                   pos={pos}
                   isActive={isMoveActive(idx)}
                   onClick={() => handleChessPosition(idx)}
                 />
-
                 {activePositions[idx + 1] && (
                   <MoveButton
                     ref={activeRef}
@@ -96,7 +141,6 @@ export default function SidebarInfo() {
                     onClick={() => handleChessPosition(idx + 1)}
                   />
                 )}
-
                 {shouldShowCustomMoves(idx) && (
                   <div
                     key={`custom-moves-${idx}`}
@@ -139,9 +183,7 @@ export default function SidebarInfo() {
           </div>
         )}
       </div>
-
       {isAnalysisCompleteForMainLine && <EvaluationGraph />}
-
       <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-md:gap-x-3 max-[350px]:gap-x-1! px-4 max-md:px-1 max-md:fixed max-md:w-full max-md:bg-zinc-100 dark:max-md:bg-zinc-800 max-md:left-0 max-md:bottom-0 max-md:py-2 max-md:z-50">
         {navButtons.map((button) => (
           <Button

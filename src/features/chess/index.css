@@ -45,7 +45,7 @@ div.move-classification.good::before {
 }
 
 div.move-classification.great::before {
-  @apply content-[""] bg-[url('/icons/thumbs-up.svg')] bg-green-600;
+  @apply content-["!"] bg-blue-500;
 }
 
 div.move-classification.excellent::before {

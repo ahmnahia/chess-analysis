@@ -14,7 +14,7 @@ export const MOVE_CLASSIFICATION_COLORS: Record<
   [MoveClassification.INACCURACY]: "stroke-yellow-600 fill-yellow-600",
   [MoveClassification.MISTAKE]: "stroke-yellow-600 fill-yellow-600",
   [MoveClassification.BLUNDER]: "stroke-red-600 fill-red-600",
-  [MoveClassification.GREAT]: "stroke-green-600 fill-green-600",
+  [MoveClassification.GREAT]: "stroke-blue-500 fill-blue-500",
   [MoveClassification.GOOD]: "stroke-green-600 fill-green-600",
   [MoveClassification.EXCELLENT]: "stroke-green-600 fill-green-600",
   [MoveClassification.BEST]: "stroke-green-600 fill-green-600",

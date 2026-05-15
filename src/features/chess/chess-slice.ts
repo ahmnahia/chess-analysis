@@ -78,7 +78,9 @@ const chessSlice = createSlice({
       });
       state.customLastOpeningName = openingName
         ? openingName
-        : state.customLastOpeningName;
+        : state.customLastOpeningName
+          ? state.customLastOpeningName
+          : state.lastOpeningName;
 
       if (!isBranching) {
         state.currentChessPositionIdx = state.customChessPositions.length - 1;
@@ -109,7 +111,6 @@ const chessSlice = createSlice({
       pos.bestMove = payload.bestMove;
       pos.evaluationView = payload.evaluationView;
       pos.isCalculatingBestMove = false;
-
       const prev =
         isCustom && idx === 0
           ? state.chessPositions[state.currentChessPositionIdx]
@@ -124,15 +125,19 @@ const chessSlice = createSlice({
           payload.legalMovesCount || 0,
           pos.color,
           pos.openingName,
+          payload.evaluationView.whiteShare,
+          prev?.evaluationView?.whiteShare,
         );
       }
       state.isAnalysisLoading = false;
     },
     setCurrentChessPositionIdx: (state, action: PayloadAction<number>) => {
       const index = action.payload;
+      if (index === state.currentChessPositionIdx) return;
       if (index >= -1 && index < state.chessPositions.length) {
         state.currentChessPositionIdx = index;
         state.customChessPositions = [];
+        state.possibleMoves = { fromSquare: "", toSquares: [] };
       }
     },
     loadPositionsFromApi: (
@@ -175,10 +180,14 @@ const chessSlice = createSlice({
       const isBranching = state.chessPositions.length > 0;
       const { customChessPositions } = state;
 
-      if (action.payload === -1 && isBranching) {
+      if (
+        action.payload === -1 &&
+        isBranching &&
+        state.currentChessPositionIdx !== 0
+      ) {
         state.customChessPositions = [];
         state.possibleMoves = { fromSquare: "", toSquares: [] };
-        state.lastOpeningName = null;
+        state.customLastOpeningName = null;
         return;
       }
 

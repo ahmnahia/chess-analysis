@@ -11,7 +11,7 @@ export function GameRow({ game, searchedUsername, onSelect }: GameRowProps) {
   return (
     <button
       type="button"
-      className="flex flex-col gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 px-2 my-2 w-full text-left cursor-pointer hover:bg-zinc-200/70 dark:hover:bg-zinc-900/80"
+      className="flex flex-col gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 px-2 my-2 w-full text-left cursor-pointer hover:bg-zinc-200/70 dark:hover:bg-zinc-900/80 rounded-md"
       onClick={() => onSelect(game)}
     >
       <h3>

@@ -6,9 +6,16 @@ import {
   setCurrentChessPositionIdx,
   toggleBoardRotation,
   undoCustomMove,
+  selectPreviousPosition,
 } from "../../chess-slice";
-import { SIDEBAR_NAV_ICONS } from "./constants";
+import {
+  piceLettersWithoutP,
+  SIDEBAR_INFO_CLASSES,
+  SIDEBAR_NAV_ICONS,
+} from "./constants";
 import { useChessContext } from "../../context/chess-provider";
+import { Chess, PieceSymbol, Square } from "chess.js";
+import { cn } from "@/lib/utils";
 
 export default function useSidebarInfo() {
   const activeRef = useRef<HTMLElement>(null);
@@ -21,8 +28,10 @@ export default function useSidebarInfo() {
     customLastOpeningName,
   } = useSelector(selectChessState);
   const { isEngineLoading } = useChessContext();
+  const previousPosition = useSelector(selectPreviousPosition);
   const activePosition = useSelector(selectActivePosition);
   const dispatch = useDispatch();
+  const tempChessClassRef = useRef<Chess>(new Chess());
   const isCustom = customChessPositions.length > 0;
   const activePositions =
     isCustom && chessPositions.length === 0
@@ -48,6 +57,57 @@ export default function useSidebarInfo() {
     customChessPositions.length,
     chessPositions.length,
   ]);
+  const previousBestMove: {
+    iconLetter: PieceSymbol;
+    move: string;
+    iconClassName: string;
+  } | null = useMemo(() => {
+    if (!previousPosition) return null;
+    const bestMove = previousPosition.bestMove;
+    if (!bestMove || bestMove.length < 4) return null;
+
+    const fen = previousPosition.after;
+    if (!fen) return null;
+
+    tempChessClassRef.current.load(fen);
+    const from = bestMove.slice(0, 2) as Square;
+    const pieceOnFromSquare = tempChessClassRef.current.get(from);
+    if (!pieceOnFromSquare) return null;
+
+    return {
+      iconLetter: pieceOnFromSquare.type,
+      move: bestMove.slice(2, 4),
+      iconClassName: cn(
+        previousPosition.color === "b"
+          ? "fill-dark-500 dark:fill-white"
+          : "fill-dark-900 dark:fill-dark-600",
+        `${SIDEBAR_INFO_CLASSES.pieceIcon} mr-1`,
+      ),
+    };
+  }, [previousPosition]);
+  const currentBestMove: {
+    iconLetter: PieceSymbol;
+    move: string;
+    iconClassName: string;
+  } | null = useMemo(() => {
+    if (activePosition) {
+      return {
+        iconLetter: activePosition.piece as PieceSymbol,
+        move: piceLettersWithoutP.includes(
+          activePosition.san?.slice(0, 1) ?? "",
+        )
+          ? (activePosition.san?.slice(1) ?? "")
+          : (activePosition.san ?? ""),
+        iconClassName: cn(
+          activePosition.color === "w"
+            ? "fill-dark-500 dark:fill-white"
+            : "fill-dark-900 dark:fill-dark-600",
+          `${SIDEBAR_INFO_CLASSES.pieceIcon} mr-1`,
+        ),
+      };
+    }
+    return null;
+  }, [activePosition]);
 
   useEffect(() => {
     const isBigScreen = window.innerWidth >= 768;
@@ -160,8 +220,7 @@ export default function useSidebarInfo() {
   );
 
   const isAnalysisCompleteForMainLine =
-    chessPositions.length > 0 &&
-    analizedCount === chessPositions.length;
+    chessPositions.length > 0 && analizedCount === chessPositions.length;
 
   return {
     activeRef,
@@ -179,7 +238,9 @@ export default function useSidebarInfo() {
     openingName,
     isAnalysisLoading,
     isEngineLoading,
+    previousBestMove,
     analizedCount,
     isAnalysisCompleteForMainLine,
+    currentBestMove,
   };
 }

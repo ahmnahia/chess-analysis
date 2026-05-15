@@ -97,18 +97,20 @@ export const handleMoveClassificationClassNames = (
   prevSquare?: string,
   prevMoveClassification?: MoveClassification,
 ) => {
-  if (square && moveClassification) {
-    toggleSquareClassName(
-      square.slice(-2),
-      ChessClassNames.MOVE_CLASSIFICATION,
-    );
-    toggleSquareClassName(square.slice(-2), moveClassification);
+  const getToSquareFromLan = (lan?: string) => {
+    if (!lan || lan.length < 4) return undefined;
+    return lan.slice(2, 4);
+  };
+
+  const toSquare = getToSquareFromLan(square);
+  const prevToSquare = getToSquareFromLan(prevSquare);
+
+  if (square && toSquare && moveClassification) {
+    toggleSquareClassName(toSquare, ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(toSquare, moveClassification);
   }
-  if (prevSquare && prevMoveClassification) {
-    toggleSquareClassName(
-      prevSquare.slice(-2),
-      ChessClassNames.MOVE_CLASSIFICATION,
-    );
-    toggleSquareClassName(prevSquare.slice(-2), prevMoveClassification);
+  if (prevSquare && prevToSquare && prevMoveClassification) {
+    toggleSquareClassName(prevToSquare, ChessClassNames.MOVE_CLASSIFICATION);
+    toggleSquareClassName(prevToSquare, prevMoveClassification);
   }
 };

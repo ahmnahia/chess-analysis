@@ -5,7 +5,7 @@ import {
   OpeningName,
   RemainingPieces,
 } from "../types/chess";
-import { EMPTY_PIECE_COUNT } from "../components/custom-chess-board/components/GamePlayerInfo/constants";
+import { EMPTY_PIECE_COUNT } from "../components/custom-chess-board/components/game-player-info/constants";
 import openingNames from "../../../../public/opening-names.json";
 
 export const getAdaptiveEngineConfig = () => {
@@ -58,15 +58,14 @@ export const getEvaluationDataFromEngineInfo = (
   const type = match[1];
   const value = parseInt(match[2], 10);
 
-  const scoreForSideToMove =
-    type === "cp" ? value / 100 : value > 0 ? 100 : -100;
-  const whiteValue =
-    sideToMove === "w" ? scoreForSideToMove : -scoreForSideToMove;
-  const mateIn =
-    type === "mate" ? (sideToMove === "w" ? value : -value) : null;
+  const isMate = type === "mate";
+  const cpForSideToMove = isMate ? (value > 0 ? 10000 : -10000) : value;
+  const cpForWhite = sideToMove === "w" ? cpForSideToMove : -cpForSideToMove;
+  const whiteValue = cpForWhite / 100;
+  const mateIn = isMate ? (sideToMove === "w" ? value : -value) : null;
 
-  const sigmoid = (input: number) => 1 / (1 + Math.exp(-0.7 * input));
-  const rawWhiteShare = sigmoid(whiteValue);
+  const WIN_PROB_K = 0.00368208;
+  const rawWhiteShare = 1 / (1 + Math.exp(-WIN_PROB_K * cpForWhite));
   const whiteShare = Math.min(0.98, Math.max(0.02, rawWhiteShare));
 
   return {
@@ -84,13 +83,13 @@ export const getMoveClassification = (
   legalMovesCount: number,
   playedBy: Color,
   openingName?: OpeningName,
+  currentWhiteShare?: number,
+  previousWhiteShare?: number,
 ): MoveClassification => {
+  if (openingName) return MoveClassification.OPENING;
+
   const normalizedPlayedMove = playedMove.trim().toLowerCase();
   const normalizedBestMove = bestMove.trim().toLowerCase();
-
-  if (openingName) {
-    return MoveClassification.OPENING;
-  }
 
   if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
     return MoveClassification.BEST;
@@ -98,14 +97,36 @@ export const getMoveClassification = (
 
   if (legalMovesCount === 1) return MoveClassification.FORCED;
 
+  if (currentWhiteShare != null && previousWhiteShare != null) {
+    const winPctLoss =
+      (playedBy === "w"
+        ? previousWhiteShare - currentWhiteShare
+        : currentWhiteShare - previousWhiteShare) * 100;
+
+    const bothWinning =
+      previousWhiteShare >= 0.9 && currentWhiteShare >= 0.9;
+    const bothLosing =
+      previousWhiteShare <= 0.1 && currentWhiteShare <= 0.1;
+    const isAlreadyDecided = bothWinning || bothLosing;
+
+    if (!isAlreadyDecided) {
+      if (winPctLoss > 25) return MoveClassification.BLUNDER;
+      if (winPctLoss > 12) return MoveClassification.MISTAKE;
+    }
+    if (winPctLoss > 6) return MoveClassification.INACCURACY;
+    if (winPctLoss < -7) return MoveClassification.GREAT;
+    if (winPctLoss > 2) return MoveClassification.GOOD;
+    return MoveClassification.EXCELLENT;
+  }
+
   const lossInPawns =
     playedBy === "w" ? previousEval - currentEval : currentEval - previousEval;
 
-  if (lossInPawns > 2.5) return MoveClassification.BLUNDER;
-  if (lossInPawns > 1.0) return MoveClassification.MISTAKE;
-  if (lossInPawns > 0.5) return MoveClassification.INACCURACY;
+  if (lossInPawns > 3.0) return MoveClassification.BLUNDER;
+  if (lossInPawns > 1.5) return MoveClassification.MISTAKE;
+  if (lossInPawns > 0.7) return MoveClassification.INACCURACY;
   if (lossInPawns < -1.0) return MoveClassification.GREAT;
-  if (lossInPawns > 0.1) return MoveClassification.GOOD;
+  if (lossInPawns > 0.2) return MoveClassification.GOOD;
   return MoveClassification.EXCELLENT;
 };
 

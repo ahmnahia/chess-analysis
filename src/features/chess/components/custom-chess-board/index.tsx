@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Chessboard } from "react-chessboard";
 import { selectChessState } from "../../chess-slice";
 import useChessBoard from "./use-chess-board";
-import GamePlayerInfo from "./components/GamePlayerInfo";
+import GamePlayerInfo from "./components/game-player-info";
 import { cn } from "@/lib/utils";
 import PieceSelector from "./components/piece-selector";
 
