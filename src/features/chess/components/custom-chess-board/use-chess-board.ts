@@ -31,6 +31,7 @@ import {
   TOTAL_COUNT_PIECES,
 } from "./components/game-player-info/constants";
 import "@/lib/bigintToJson";
+import { MoveClassification } from "../../enums";
 
 export default function useChessBoard() {
   const { chessJs, calculateBestMove } = useChessContext();
@@ -45,6 +46,7 @@ export default function useChessBoard() {
     isBoardFlipped,
     arrows,
     promotionPending,
+    engineDepth,
   } = useSelector(selectChessState);
   const activePosition = useSelector(selectActivePosition);
   const previousPosition = useSelector(selectPreviousPosition);
@@ -85,6 +87,14 @@ export default function useChessBoard() {
 
   useEffect(() => {
     // handling best move arrows
+    if (
+      !activePosition?.moveClassification ||
+      activePosition?.moveClassification === MoveClassification.OPENING
+    ) {
+      dispatch(setArrows([]));
+      return;
+    }
+
     if (currentChessPositionIdx >= -1) {
       const bestMove = previousPosition?.bestMove;
 
@@ -96,7 +106,7 @@ export default function useChessBoard() {
         dispatch(setArrows([]));
       }
     }
-  }, [dispatch, previousPosition]);
+  }, [dispatch, previousPosition, activePosition]);
 
   useEffect(() => {
     // syncing chessjs state
@@ -196,7 +206,7 @@ export default function useChessBoard() {
     const nextFen = chessJs.fen();
     const remainingPieces = getRemainingAndCapturedPieces(chessJs.board());
 
-    calculateBestMove(nextFen, nextIndex, legalMovesCount, 15);
+    calculateBestMove(nextFen, nextIndex, legalMovesCount, engineDepth);
     dispatch(
       setChessPosition({
         isCheck: chessJs.isCheck(),

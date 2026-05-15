@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import Header from "../components/header";
 import AppSidebar from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { StoreProvider } from "./store-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,11 +20,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark">
+          <StoreProvider>
             <SidebarProvider className="flex-col">
               <Header />
               <AppSidebar />
               <SidebarInset>{children}</SidebarInset>
             </SidebarProvider>
+          </StoreProvider>
         </ThemeProvider>
       </body>
     </html>

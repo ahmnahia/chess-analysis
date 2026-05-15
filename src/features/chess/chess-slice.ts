@@ -15,6 +15,7 @@ import { Color, Move } from "chess.js";
 import { getMoveClassification } from "./utils";
 import { getOpeningName } from "./utils/";
 import { GameInfo } from "./components/user-profile-modal/types";
+import { clampEngineDepth } from "./utils/logic";
 
 const initialState: ChessState = {
   squareStyles: {},
@@ -27,6 +28,7 @@ const initialState: ChessState = {
   arrows: [],
   promotionPending: null,
   apiGame: undefined,
+  engineDepth: 12,
 };
 
 const chessSlice = createSlice({
@@ -215,6 +217,9 @@ const chessSlice = createSlice({
     setAnalysIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isAnalysisLoading = action.payload;
     },
+    setEngineDepth: (state, action: PayloadAction<number>) => {
+      state.engineDepth = clampEngineDepth(action.payload);
+    },
   },
 });
 
@@ -231,6 +236,7 @@ export const {
   resetChessState,
   undoCustomMove,
   setAnalysIsLoading,
+  setEngineDepth,
 } = chessSlice.actions;
 
 export default chessSlice.reducer;

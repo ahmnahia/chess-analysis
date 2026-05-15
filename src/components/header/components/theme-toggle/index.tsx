@@ -13,7 +13,7 @@ export default function ThemeToggle() {
 
   return (
     <>
-      <div
+      <button
         className={`text-2xl cursor-pointer text-gray-500  ${
           theme == "dark" ? "hidden" : "block"
         }`}
@@ -22,8 +22,8 @@ export default function ThemeToggle() {
         }}
       >
         <ReactSVG src="/icons/moon.svg" className="[&_svg]:w-8" />
-      </div>
-      <div
+      </button>
+      <button
         className={`text-2xl cursor-pointer text-orange-300 ${
           theme == "dark" ? "block" : "hidden"
         }`}
@@ -32,7 +32,7 @@ export default function ThemeToggle() {
         }}
       >
         <ReactSVG src="/icons/sun.svg" className="[&_svg]:w-8 [&_svg]:fill-yellow-500" />
-      </div>
+      </button>
     </>
   );
 }

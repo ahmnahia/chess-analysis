@@ -32,6 +32,7 @@ export interface ChessState {
   apiGame?: GameInfo;
   lastOpeningName?: OpeningName;
   customLastOpeningName?: OpeningName;
+  engineDepth: number;
 }
 
 export type ChessBoard = ({

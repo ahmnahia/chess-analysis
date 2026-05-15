@@ -93,7 +93,7 @@ export default function useEngine() {
       fen: string,
       targetIndex: number,
       legalMovesCount: number,
-      depth: number = 15,
+      depth: number = 10,
     ): Promise<void> => {
       if (!engine) return;
 

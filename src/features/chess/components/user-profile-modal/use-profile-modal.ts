@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Chess } from "chess.js";
 import { getLatestGames } from "../../api/chess-com";
 import { ChessComGame } from "../../types/chess-com";
-import { loadPositionsFromApi } from "../../chess-slice";
+import { loadPositionsFromApi, selectChessState } from "../../chess-slice";
 import { useChessContext } from "../../context/chess-provider";
 import { getRemainingAndCapturedPieces } from "../../utils";
 import { Platform } from "./enum";
@@ -15,6 +15,7 @@ import { normalizeUsername, toGameInfo } from "./utils";
 export default function useProfileModal() {
   const dispatch = useDispatch();
   const { chessJs, calculateBestMovesForPositions } = useChessContext();
+  const { engineDepth } = useSelector(selectChessState);
   const [platform, setPlatform] = useState<Platform>(Platform.ChessCom);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
@@ -80,10 +81,11 @@ export default function useProfileModal() {
         chessPositions,
         game,
         isBoardFlipped:
-          normalizeUsername(username) === normalizeUsername(game.black.username),
+          normalizeUsername(username) ===
+          normalizeUsername(game.black.username),
       }),
     );
-    await calculateBestMovesForPositions(chessPositions);
+    await calculateBestMovesForPositions(chessPositions, engineDepth);
   };
 
   const clearSearchData = () => {

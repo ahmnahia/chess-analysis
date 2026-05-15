@@ -7,6 +7,7 @@ import {
 } from "../types/chess";
 import { EMPTY_PIECE_COUNT } from "../components/custom-chess-board/components/game-player-info/constants";
 import openingNames from "../../../../public/opening-names.json";
+import { ENGINE_DEPTH_MAX, ENGINE_DEPTH_MIN } from "@/components/header/components/settings-modal/constants";
 
 export const getAdaptiveEngineConfig = () => {
   const nav = navigator as Navigator & { deviceMemory?: number };
@@ -200,3 +201,6 @@ export function getOpeningName(history: string[]): OpeningName {
 
   return lastFoundName;
 }
+
+export const clampEngineDepth = (depth: number) =>
+  Math.min(ENGINE_DEPTH_MAX, Math.max(ENGINE_DEPTH_MIN, depth));

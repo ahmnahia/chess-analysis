@@ -23,19 +23,22 @@ export function ChessProvider({ children }: { children: ReactNode }) {
       fen: string,
       targetIndex: number,
       legalMovesCount: number,
-      depth: number = 15,
+      depth: number = 12,
     ) => {
       runBestMoveAnalysis(fen, targetIndex, legalMovesCount, depth);
     },
     [runBestMoveAnalysis],
-  );  
+  );
 
   const calculateBestMovesForPositions = useCallback(
-    async (positions: ChessPositions, depth: number = 15) => {
+    async (positions: ChessPositions, depth: number = 12) => {
+      const board = new Chess();
       for (let index = 0; index < positions.length; index++) {
         const fen = positions[index].after;
         if (!fen) continue;
-        await runBestMoveAnalysis(fen, index, depth);
+        board.load(fen);
+        const legalMovesCount = board.moves().length;
+        await runBestMoveAnalysis(fen, index, legalMovesCount, depth);
       }
     },
     [runBestMoveAnalysis],

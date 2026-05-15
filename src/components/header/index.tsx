@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
-import { SidebarTrigger } from "./ui/sidebar";
-import ThemeToggle from "./theme-toggle";
+import { SidebarTrigger } from "../ui/sidebar";
+import ThemeToggle from "./components/theme-toggle";
+import SettingsModal from "./components/settings-modal";
 
 export default function Header() {
   return (
@@ -11,9 +12,9 @@ export default function Header() {
           <SidebarTrigger />
           <span>Chess Analysis</span>
         </div>
-
-        <div>
+        <div className="flex items-center gap-3">
           <ThemeToggle />
+          <SettingsModal />
         </div>
       </div>
     </header>
