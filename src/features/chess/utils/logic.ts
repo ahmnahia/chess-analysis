@@ -21,10 +21,12 @@ export const getAdaptiveEngineConfig = () => {
     : 1;
 
   let hash = 64;
-  if (deviceMemory >= 8) {
-    hash = 256;
+  if (deviceMemory >= 16) {
+    hash = 1024;
+  } else if (deviceMemory >= 8) {
+    hash = 512;
   } else if (deviceMemory >= 4) {
-    hash = 128;
+    hash = 256;
   } else if (deviceMemory <= 1) {
     hash = 16;
   }

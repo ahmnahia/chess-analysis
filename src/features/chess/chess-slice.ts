@@ -105,7 +105,7 @@ const chessSlice = createSlice({
       const positions = isCustom
         ? state.customChessPositions
         : state.chessPositions;
-      const idx = isCustom ? positions.length - 1 : payload.index;
+      const idx = payload.index;
       const pos = positions[idx];
 
       if (!pos) return;
@@ -131,7 +131,9 @@ const chessSlice = createSlice({
           prev?.evaluationView?.whiteShare,
         );
       }
-      state.isAnalysisLoading = false;
+      state.isAnalysisLoading = state.customChessPositions.some(
+        (p) => p.isCalculatingBestMove,
+      );
     },
     setCurrentChessPositionIdx: (state, action: PayloadAction<number>) => {
       const index = action.payload;
@@ -177,7 +179,10 @@ const chessSlice = createSlice({
     setPromotionPending: (state, action: PayloadAction<PromotionPending>) => {
       state.promotionPending = action.payload;
     },
-    resetChessState: () => initialState,
+    resetChessState: (state) => ({
+      ...initialState,
+      engineDepth: state.engineDepth,
+    }),
     undoCustomMove: (state, action: PayloadAction<number>) => {
       const isBranching = state.chessPositions.length > 0;
       const { customChessPositions } = state;

@@ -41,7 +41,10 @@ export default function CustomChessBoard() {
           capturedDiff={blackCapturedDiff}
         />
       </div>
-      <div ref={chessBoardRef} className="max-w-[80vh] relative">
+      <div
+        ref={chessBoardRef}
+        className="relative aspect-square max-lg:w-full max-lg:max-w-[80vh] lg:w-[min(65vw,calc(100dvh-200px))]"
+      >
         <Chessboard
           options={{
             position: currentPosition,
@@ -51,6 +54,7 @@ export default function CustomChessBoard() {
             onPieceDrag,
             arrows,
             boardOrientation: isBoardFlipped ? "black" : "white",
+            boardStyle: { width: "100%", height: "100%" },
           }}
         />
         {promotionPending && promotionColor ? (

@@ -221,7 +221,7 @@ export default function useChessBoard() {
     const piece = chessJs.get(from as Square);
     const needsPromotion =
       piece?.type === "p" &&
-      possibleMoves.toSquares.some((item) => item.includes(to)) &&
+      possibleMoves.toSquares.some((item: string) => item.includes(to)) &&
       ((piece.color === "w" && to[1] === "8") ||
         (piece.color === "b" && to[1] === "1"));
 

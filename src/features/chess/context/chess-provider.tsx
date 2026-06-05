@@ -11,6 +11,8 @@ import { Chess } from "chess.js";
 import { ChessContextValue } from "../types/context";
 import { ChessPositions } from "../types/chess";
 import useEngine from "../hooks/use-engine";
+import { getOpeningName } from "../utils";
+import { SHALLOW_DEPTH_FOR_TRIVIAL_POSITIONS } from "../constants";
 
 const ChessContext = createContext<ChessContextValue | null>(null);
 
@@ -32,13 +34,31 @@ export function ChessProvider({ children }: { children: ReactNode }) {
 
   const calculateBestMovesForPositions = useCallback(
     async (positions: ChessPositions, depth: number = 12) => {
+      const shallowDepth = Math.min(SHALLOW_DEPTH_FOR_TRIVIAL_POSITIONS, depth);
       const board = new Chess();
+      const sanHistory: string[] = [];
+      let stillInOpeningBook = true;
+
       for (let index = 0; index < positions.length; index++) {
         const fen = positions[index].after;
         if (!fen) continue;
+        sanHistory.push(positions[index].san || "");
         board.load(fen);
         const legalMovesCount = board.moves().length;
-        await runBestMoveAnalysis(fen, index, legalMovesCount, depth);
+
+        let isOpening = false;
+        if (stillInOpeningBook) {
+          if (getOpeningName(sanHistory) !== null) {
+            isOpening = true;
+          } else {
+            stillInOpeningBook = false;
+          }
+        }
+        const isForced = legalMovesCount === 1;
+
+        const effectiveDepth = isOpening || isForced ? shallowDepth : depth;
+
+        await runBestMoveAnalysis(fen, index, legalMovesCount, effectiveDepth);
       }
     },
     [runBestMoveAnalysis],

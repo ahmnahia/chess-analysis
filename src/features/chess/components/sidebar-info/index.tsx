@@ -11,9 +11,8 @@ import MoveButton from "./components/move-button/index";
 import { Spinner } from "@/components/ui/spinner";
 import Progress from "./components/progress";
 import EvaluationGraph from "./components/evaluation-graph";
-import { selectActivePosition } from "../../chess-slice";
-import { useSelector } from "react-redux";
 import { MoveClassification } from "../../enums";
+import { ChessPosition } from "../../types/chess";
 
 export default function SidebarInfo() {
   const {
@@ -37,7 +36,7 @@ export default function SidebarInfo() {
   } = useSidebarInfo();
 
   return (
-    <div className="h-full max-w-[500px] max-lg:max-w-full max-md:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-md:pt-4 max-md:pb-0 max-md:mb-18">
+    <div className="h-full max-w-[500px] max-lg:max-w-full max-lg:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-lg:pt-4 max-lg:pb-0 max-lg:mb-18">
       <div className="flex flex-col items-center justify-center gap-1">
         <div className="flex items-center gap-2">
           <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
@@ -87,7 +86,7 @@ export default function SidebarInfo() {
                   className={currentBestMove?.iconClassName}
                 />
                 {currentBestMove?.move}{" "}
-                {MOVE_CLASSIFICATION_TEXTS[activePosition.moveClassification]}
+                {MOVE_CLASSIFICATION_TEXTS[activePosition.moveClassification as MoveClassification]}
               </span>
             </div>
             {activePosition.moveClassification !== MoveClassification.BEST &&
@@ -116,7 +115,7 @@ export default function SidebarInfo() {
       </div>
       <div className="my-3 max-h-[40vh] overflow-y-auto">
         {activePositions.length > 0 ? (
-          activePositions.map((pos, idx) => {
+          activePositions.map((pos: ChessPosition, idx: number) => {
             if (idx % 2 !== 0) return null;
             return (
               <div
@@ -149,7 +148,7 @@ export default function SidebarInfo() {
                       "bg-blue-200 dark:bg-cyan-950 my-1 w-full rounded-sm px-0",
                     )}
                   >
-                    {customChessPositions.map((cPos, cusMoveIdx) => (
+                    {customChessPositions.map((cPos: ChessPosition, cusMoveIdx: number) => (
                       <Fragment key={`custom-move-fragment-${cusMoveIdx}`}>
                         {cusMoveIdx % 2 === 0 && (
                           <span className="w-1/5"></span>
@@ -184,7 +183,7 @@ export default function SidebarInfo() {
         )}
       </div>
       {isAnalysisCompleteForMainLine && <EvaluationGraph />}
-      <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-md:gap-x-3 max-[350px]:gap-x-1! px-4 max-md:px-1 max-md:fixed max-md:w-full max-md:bg-zinc-100 dark:max-md:bg-zinc-800 max-md:left-0 max-md:bottom-0 max-md:py-2 max-md:z-50">
+      <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-lg:gap-x-3 max-[350px]:gap-x-1! px-4 max-lg:px-1 max-lg:fixed max-lg:w-full max-lg:bg-zinc-100 dark:max-lg:bg-zinc-800 max-lg:left-0 max-lg:bottom-0 max-lg:py-2 max-lg:z-50">
         {navButtons.map((button) => (
           <Button
             key={button.key}

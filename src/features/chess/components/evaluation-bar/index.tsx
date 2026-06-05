@@ -15,15 +15,15 @@ export default function EvaluationBar() {
   return (
     <div
       className={cn(
-        "self-stretch my-2 w-10 max-md:w-full min-w-10 max-md:min-w-6 md:overflow-hidden flex flex-col max-md:flex-row bg-transparent",
+        "self-stretch my-2 w-10 max-lg:w-full min-w-10 max-lg:min-w-6 lg:overflow-hidden flex flex-col max-lg:flex-row bg-transparent",
         isBoardFlipped && "flex-col-reverse",
       )}
     >
       <div
         className={cn(
-          "bg-zinc-700 text-white flex items-start max-md:h-6 max-md:items-center justify-center max-md:justify-start pt-1 max-md:p-0 max-md:pl-1 text-xs max-md:text-[10px] font-semibold transition-all duration-300 md:rounded-t-md max-md:rounded-l-md",
+          "bg-zinc-700 text-white flex items-start max-lg:h-6 max-lg:items-center justify-center max-lg:justify-start pt-1 max-lg:p-0 max-lg:pl-1 text-xs max-lg:text-[10px] font-semibold transition-all duration-300 lg:rounded-t-md max-lg:rounded-l-md",
           isBoardFlipped &&
-            "items-end pt-0 pb-1 md:rounded-b-md md:rounded-t-none",
+            "items-end pt-0 pb-1 lg:rounded-b-md lg:rounded-t-none",
         )}
         style={{ flexGrow: blackShare }}
       >
@@ -33,9 +33,9 @@ export default function EvaluationBar() {
       </div>
       <div
         className={cn(
-          "bg-zinc-100 dark:bg-white text-black flex items-end max-md:items-center justify-center max-md:justify-end max-md:h-6  pb-1 max-md:p-0 max-md:pr-1 text-xs max-md:text-[10px] font-semibold transition-all duration-300 md:rounded-b-md max-md:rounded-r-md",
+          "bg-zinc-100 dark:bg-white text-black flex items-end max-lg:items-center justify-center max-lg:justify-end max-lg:h-6  pb-1 max-lg:p-0 max-lg:pr-1 text-xs max-lg:text-[10px] font-semibold transition-all duration-300 lg:rounded-b-md max-lg:rounded-r-md",
           isBoardFlipped &&
-            "items-start pt-1 pb-0 md:rounded-t-md md:rounded-b-none",
+            "items-start pt-1 pb-0 lg:rounded-t-md lg:rounded-b-none",
         )}
         style={{ flexGrow: evaluationView.whiteShare }}
       >

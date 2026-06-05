@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import Header from "../components/header";
-import AppSidebar from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { StoreProvider } from "./store-provider";
 import "./globals.css";
 
@@ -21,11 +19,8 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark">
           <StoreProvider>
-            <SidebarProvider className="flex-col">
-              <Header />
-              <AppSidebar />
-              <SidebarInset>{children}</SidebarInset>
-            </SidebarProvider>
+            <Header />
+            {children}
           </StoreProvider>
         </ThemeProvider>
       </body>
