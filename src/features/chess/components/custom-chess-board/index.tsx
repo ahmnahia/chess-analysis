@@ -6,6 +6,7 @@ import useChessBoard from "./use-chess-board";
 import GamePlayerInfo from "./components/game-player-info";
 import { cn } from "@/lib/utils";
 import PieceSelector from "./components/piece-selector";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function CustomChessBoard() {
   const {
@@ -23,6 +24,8 @@ export default function CustomChessBoard() {
     onPromotionPieceSelect,
     chessBoardRef,
     cancelPromotionSelection,
+    isBulkAnalysisRunning,
+    notifyWaitForAnalysis,
   } = useChessBoard();
   const state = useSelector(selectChessState);
   const { isBoardFlipped } = state;
@@ -45,6 +48,14 @@ export default function CustomChessBoard() {
         ref={chessBoardRef}
         className="relative aspect-square max-lg:w-full max-lg:max-w-[80vh] lg:w-[min(65vw,calc(100dvh-200px))]"
       >
+        {isBulkAnalysisRunning && (
+          <div
+            className="absolute inset-0 z-10 flex cursor-not-allowed items-center justify-center bg-black/30 transition-opacity"
+            onClick={notifyWaitForAnalysis}
+          >
+            <Spinner className="size-10 text-white" />
+          </div>
+        )}
         <Chessboard
           options={{
             position: currentPosition,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import Header from "../components/header";
 import { StoreProvider } from "./store-provider";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
           <StoreProvider>
             <Header />
             {children}
+            <Toaster richColors position="top-center" />
           </StoreProvider>
         </ThemeProvider>
       </body>

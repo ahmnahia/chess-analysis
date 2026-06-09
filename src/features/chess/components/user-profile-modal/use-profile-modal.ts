@@ -64,18 +64,20 @@ export default function useProfileModal() {
   };
 
   const handleGameClick = async (game: GameInfo) => {
-    chessJs.loadPgn(game.pgn);
-    const history = chessJs.history({ verbose: true });
     const tempChess = new Chess();
+    tempChess.loadPgn(game.pgn);
+    const history = tempChess.history({ verbose: true });
+    const board = new Chess();
     const chessPositions = history.map((move) => {
-      tempChess.move(move);
+      board.move(move);
       return {
         ...move,
         isCalculatingBestMove: true,
-        remainingPieces: getRemainingAndCapturedPieces(tempChess.board()),
+        remainingPieces: getRemainingAndCapturedPieces(board.board()),
       };
     });
 
+    chessJs.reset();
     dispatch(
       loadPositionsFromApi({
         chessPositions,

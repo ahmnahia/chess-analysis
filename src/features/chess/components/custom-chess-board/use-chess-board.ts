@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
 import { PromotionPiece } from "./components/piece-selector/enum";
 import { useDispatch, useSelector } from "react-redux";
 import { PieceDropHandlerArgs, PieceHandlerArgs } from "react-chessboard";
@@ -59,6 +60,20 @@ export default function useChessBoard() {
   const prevIsBoardFlippedRef = useRef<boolean>(isBoardFlipped);
   const chessBoardRef = useRef<HTMLDivElement>(null);
 
+  const isBulkAnalysisRunning = useMemo(
+    () =>
+      chessPositions.length > 0 &&
+      chessPositions.some((pos: ChessPosition) => !pos.moveClassification),
+    [chessPositions],
+  );
+
+  const notifyWaitForAnalysis = useCallback(() => {
+    toast.info(
+      "Please wait for the analysis to finish before making custom moves.",
+      { id: "wait-for-bulk-analysis", duration: 1500 },
+    );
+  }, []);
+
   const { whiteCapturedDiff, blackCapturedDiff } = useMemo(() => {
     const remainingPiecesWhite = activePosition?.remainingPieces?.black;
     const remainingPiecesBlack = activePosition?.remainingPieces?.white;
@@ -110,12 +125,30 @@ export default function useChessBoard() {
 
   useEffect(() => {
     // syncing chessjs state
+    if (customChessPositions.length > 0) {
+      const fen = activePosition?.after;
+      if (fen && fen !== chessJs.fen()) {
+        chessJs.load(fen);
+      }
+      return;
+    }
+
     if (currentChessPositionIdx === -1) {
       chessJs.reset();
-    } else if (chessJs && activePosition?.after !== chessJs.fen()) {
-      chessJs.load(activePosition?.after ?? chessJs.fen());
+      return;
     }
-  }, [activePosition, chessJs]);
+
+    const fen = activePosition?.after;
+    if (fen && fen !== chessJs.fen()) {
+      chessJs.load(fen);
+    }
+  }, [
+    activePosition,
+    chessJs,
+    currentChessPositionIdx,
+    customChessPositions.length,
+    chessPositions.length,
+  ]);
 
   useEffect(() => {
     // handles the possible moves class names
@@ -314,7 +347,11 @@ export default function useChessBoard() {
     currentChessPositionIdx,
     whiteCapturedDiff,
     blackCapturedDiff,
-    currentPosition: activePosition?.after,
+    currentPosition:
+      activePosition?.after ??
+      (currentChessPositionIdx === -1 && chessPositions[0]?.before
+        ? chessPositions[0].before
+        : undefined),
     arrows,
     apiGame,
     onPieceDrag,
@@ -325,5 +362,7 @@ export default function useChessBoard() {
     onPromotionPieceSelect,
     chessBoardRef,
     cancelPromotionSelection,
+    isBulkAnalysisRunning,
+    notifyWaitForAnalysis,
   };
 }

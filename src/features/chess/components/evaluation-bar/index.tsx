@@ -21,7 +21,7 @@ export default function EvaluationBar() {
     >
       <div
         className={cn(
-          "bg-zinc-700 text-white flex items-start max-lg:h-6 max-lg:items-center justify-center max-lg:justify-start pt-1 max-lg:p-0 max-lg:pl-1 text-xs max-lg:text-[10px] font-semibold transition-all duration-300 lg:rounded-t-md max-lg:rounded-l-md",
+          "bg-zinc-900 dark:bg-zinc-700 text-white flex items-start max-lg:h-6 max-lg:items-center justify-center max-lg:justify-start pt-1 max-lg:p-0 max-lg:pl-1 text-xs max-lg:text-[10px] font-semibold transition-all duration-300 lg:rounded-t-md max-lg:rounded-l-md",
           isBoardFlipped &&
             "items-end pt-0 pb-1 lg:rounded-b-md lg:rounded-t-none",
         )}

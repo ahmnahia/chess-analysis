@@ -36,7 +36,7 @@ export default function SidebarInfo() {
   } = useSidebarInfo();
 
   return (
-    <div className="h-full max-w-[500px] max-lg:max-w-full max-lg:w-full flex flex-col justify-between bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-lg:pt-4 max-lg:pb-0 max-lg:mb-18">
+    <div className="flex min-h-0 w-full max-w-[450px] max-lg:max-w-full flex-col bg-zinc-100 dark:bg-dark-800 rounded-sm py-4 max-lg:pt-4 max-lg:pb-0 max-lg:mb-18 max-lg:mt-4 max-lg:h-auto lg:h-[85%] lg:self-center">
       <div className="flex flex-col items-center justify-center gap-1">
         <div className="flex items-center gap-2">
           <span className="p-1 bg-white dark:bg-zinc-950 rounded-full">
@@ -113,7 +113,7 @@ export default function SidebarInfo() {
           </div>
         )}
       </div>
-      <div className="my-3 max-h-[40vh] overflow-y-auto">
+      <div className="my-3 min-h-0 flex-1 overflow-y-auto max-lg:max-h-[40vh] max-lg:flex-none">
         {activePositions.length > 0 ? (
           activePositions.map((pos: ChessPosition, idx: number) => {
             if (idx % 2 !== 0) return null;
@@ -183,7 +183,7 @@ export default function SidebarInfo() {
         )}
       </div>
       {isAnalysisCompleteForMainLine && <EvaluationGraph />}
-      <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-lg:gap-x-3 max-[350px]:gap-x-1! px-4 max-lg:px-1 max-lg:fixed max-lg:w-full max-lg:bg-zinc-100 dark:max-lg:bg-zinc-800 max-lg:left-0 max-lg:bottom-0 max-lg:py-2 max-lg:z-50">
+      <div className="flex flex-wrap justify-center gap-4 max-xl:gap-1 max-lg:gap-x-3 max-[350px]:gap-x-1! px-4 max-lg:px-1 max-lg:fixed max-lg:w-full max-lg:bg-zinc-100 dark:max-lg:bg-zinc-800 max-lg:left-0 max-lg:bottom-0 max-lg:py-2 max-lg:z-50 max-lg:border-t border-zinc-200 dark:border-zinc-950">
         {navButtons.map((button) => (
           <Button
             key={button.key}

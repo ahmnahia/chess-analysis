@@ -16,6 +16,7 @@ import {
 import { useChessContext } from "../../context/chess-provider";
 import { Chess, PieceSymbol, Square } from "chess.js";
 import { cn } from "@/lib/utils";
+import { ChessPosition } from "../../types/chess";
 
 export default function useSidebarInfo() {
   const activeRef = useRef<HTMLElement>(null);
@@ -38,7 +39,9 @@ export default function useSidebarInfo() {
       ? customChessPositions
       : chessPositions;
   const analizedCount = useMemo(
-    () => chessPositions.filter((pos) => pos.moveClassification).length,
+    () =>
+      chessPositions.filter((pos: ChessPosition) => pos.moveClassification)
+        .length,
     [chessPositions],
   );
   const openingName = useMemo(() => {
@@ -119,7 +122,8 @@ export default function useSidebarInfo() {
     }
   }, [currentChessPositionIdx, customChessPositions.length]);
 
-  const canGoBack = currentChessPositionIdx >= 0;
+  const canGoBack =
+    currentChessPositionIdx >= 0 || customChessPositions.length > 0;
   const canGoForward =
     currentChessPositionIdx < chessPositions.length - 1 &&
     customChessPositions.length === 0;
@@ -153,12 +157,11 @@ export default function useSidebarInfo() {
 
   const shouldShowCustomMoves = useCallback(
     (index: number) => {
-      return (
-        isCustom &&
-        chessPositions.length > 0 &&
-        (index === currentChessPositionIdx ||
-          index + 1 === currentChessPositionIdx)
-      );
+      if (!isCustom || chessPositions.length === 0) return false;
+      const branchIdx = currentChessPositionIdx;
+      const branchRow =
+        branchIdx === -1 ? 0 : branchIdx % 2 === 0 ? branchIdx : branchIdx - 1;
+      return index === branchRow;
     },
     [isCustom, chessPositions.length, currentChessPositionIdx],
   );
