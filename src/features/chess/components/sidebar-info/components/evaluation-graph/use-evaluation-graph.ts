@@ -12,9 +12,11 @@ import {
   PAD_Y,
   VIEW_H,
   VIEW_W,
-} from "./constats";
+} from "./constants";
 import { innerDimensions, whiteShare, whiteValue } from "./utils";
 import { Line } from "./types";
+import { MoveClassification } from "@/features/chess/enums";
+import { ChessPosition } from "@/features/chess/types/chess";
 
 export default function useEvaluationGraph() {
   const dispatch = useDispatch();
@@ -51,13 +53,13 @@ export default function useEvaluationGraph() {
       };
     }
 
-    const pts = chessPositions.map((p, i) => ({
+    const pts = chessPositions.map((p: ChessPosition, i: number) => ({
       x: xAt(i),
       y: yAtShare(whiteShare(p)),
     }));
 
     const lineD = pts
-      .map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
+      .map((pt: { x: number; y: number }, i: number) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
       .join(" ");
 
     const x0 = pts[0]!.x;
@@ -79,7 +81,7 @@ export default function useEvaluationGraph() {
     for (let i = 0; i < n; i++) {
       const cls =
         MOVE_CLASSIFICATION_COLORS[
-          chessPositions[i]?.moveClassification ?? "DEFAULT"
+          (chessPositions[i]?.moveClassification as MoveClassification) ?? "DEFAULT"
         ];
       lines.push({
         x: xAt(i),

@@ -1,9 +1,10 @@
 "use client";
 
 import useEvaluationGraph from "./use-evaluation-graph";
-import { MOVE_CLASSIFICATION_COLORS } from "./constats";
+import { MOVE_CLASSIFICATION_COLORS } from "./constants";
 import GraphTooltip from "./components/graph-tooltip";
-import { VIEW_W, VIEW_H, PAD_X, PAD_Y } from "./constats";
+import { VIEW_W, VIEW_H, PAD_X, PAD_Y } from "./constants";
+import { MoveClassification } from "@/features/chess/enums";
 
 export default function EvaluationGraph() {
   const {
@@ -104,7 +105,8 @@ export default function EvaluationGraph() {
               y2={VIEW_H - PAD_Y}
               className={
                 MOVE_CLASSIFICATION_COLORS[
-                  activePosition?.moveClassification ?? "DEFAULT"
+                  (activePosition?.moveClassification as MoveClassification) ??
+                    "DEFAULT"
                 ]
               }
               strokeWidth={1.05}

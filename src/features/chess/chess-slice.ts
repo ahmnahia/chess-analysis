@@ -1,5 +1,4 @@
-"use client";
-import { RootState } from "@/app/store";
+import { RootState } from "@/lib/store";
 import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 import {
   SquareStyles,
