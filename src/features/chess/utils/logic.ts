@@ -11,14 +11,7 @@ import { ENGINE_DEPTH_MAX, ENGINE_DEPTH_MIN } from "@/components/header/componen
 
 export const getAdaptiveEngineConfig = () => {
   const nav = navigator as Navigator & { deviceMemory?: number };
-  const hardwareThreads = nav.hardwareConcurrency ?? 2;
   const deviceMemory = nav.deviceMemory ?? 4;
-
-  const isCrossOriginIsolated =
-    typeof window !== "undefined" && !!window.crossOriginIsolated;
-  const threads = isCrossOriginIsolated
-    ? Math.min(Math.max(hardwareThreads - 1, 1), 12)
-    : 1;
 
   let hash = 64;
   if (deviceMemory >= 16) {
@@ -35,12 +28,7 @@ export const getAdaptiveEngineConfig = () => {
     typeof WebAssembly === "object" &&
     typeof WebAssembly.instantiate === "function";
 
-  return {
-    threads,
-    hash,
-    supportsMultiThread: !!window.SharedArrayBuffer && !!crossOriginIsolated,
-    isWasmSupported,
-  };
+  return { hash, isWasmSupported };
 };
 
 export const getEvaluationDataFromEngineInfo = (
@@ -153,24 +141,10 @@ export const getRemainingAndCapturedPieces = (
   return remainingPieces;
 };
 
-export const chooseEngine: (
-  threads: number,
-  hash: number,
-  supportsMultiThread: boolean,
-  isWasmSupported: boolean,
-) => string = (threads, hash, supportsMultiThread, isWasmSupported) => {
+export const chooseEngine = (hash: number, isWasmSupported: boolean): string => {
   if (!isWasmSupported) return "stockfish-18-asm.js";
 
-  if (!supportsMultiThread || threads === 1) {
-    return hash <= 32
-      ? "stockfish-18-lite-single.js"
-      : "stockfish-18-single.js";
-  }
-  if (threads > 2 && hash > 64) {
-    return "stockfish-18.js";
-  }
-
-  return "stockfish-18-lite.js";
+  return hash <= 32 ? "stockfish-18-lite-single.js" : "stockfish-18-single.js";
 };
 
 export function formatMovesToOpeningKey(history: string[]): string {

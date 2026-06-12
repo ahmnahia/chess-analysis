@@ -9,6 +9,7 @@ import {
   getAdaptiveEngineConfig,
   getEvaluationDataFromEngineInfo,
 } from "../utils";
+import { ENGINES_PATH } from "../constants";
 
 export default function useEngine() {
   const dispatch = useDispatch();
@@ -28,10 +29,9 @@ export default function useEngine() {
   useEffect(() => {
     if (!dispatch) return;
 
-    const { threads, hash, supportsMultiThread, isWasmSupported } =
-      getAdaptiveEngineConfig();
+    const { hash, isWasmSupported } = getAdaptiveEngineConfig();
 
-    const workerPath = `/engines/${chooseEngine(threads, hash, supportsMultiThread, isWasmSupported)}`;
+    const workerPath = `${ENGINES_PATH}/${chooseEngine(hash, isWasmSupported)}`;
 
     const worker = new window.Worker(workerPath);
 
@@ -76,7 +76,7 @@ export default function useEngine() {
     };
 
     worker.postMessage("uci");
-    worker.postMessage(`setoption name Threads value ${threads}`);
+    worker.postMessage("setoption name Threads value 1");
     worker.postMessage(`setoption name Hash value ${hash}`);
     worker.postMessage("isready");
     worker.postMessage("ucinewgame");

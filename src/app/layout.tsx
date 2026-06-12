@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import Header from "../components/header";
 import { StoreProvider } from "@/lib/store/store-provider";
 import { Toaster } from "@/components/ui/sonner";
+import ServiceWorkerRegistration from "@/components/service-worker-registration";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark">
           <StoreProvider>
+            <ServiceWorkerRegistration />
             <Header />
             {children}
             <Toaster richColors position="top-center" />
