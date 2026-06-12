@@ -34,6 +34,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: "/icons/piece-q.svg",
+  },
 };
 
 export const viewport: Viewport = {

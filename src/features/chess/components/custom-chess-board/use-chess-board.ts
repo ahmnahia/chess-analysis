@@ -121,7 +121,7 @@ export default function useChessBoard() {
         dispatch(setArrows([]));
       }
     }
-  }, [dispatch, previousPosition, activePosition]);
+  }, [dispatch, previousPosition, activePosition, currentChessPositionIdx]);
 
   useEffect(() => {
     // syncing chessjs state

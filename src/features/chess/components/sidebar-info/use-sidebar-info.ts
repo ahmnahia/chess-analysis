@@ -59,6 +59,7 @@ export default function useSidebarInfo() {
     lastOpeningName,
     customChessPositions.length,
     chessPositions.length,
+    currentChessPositionIdx,
   ]);
   const previousBestMove: {
     iconLetter: PieceSymbol;

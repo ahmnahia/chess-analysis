@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chess Analysis
+
+A chess game analyzer built with Next.js and Stockfish 18. Load games from Chess.com or Lichess, get deep engine analysis, move-by-move classifications, and an interactive evaluation graph — all running locally in the browser.
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss)
+![Stockfish](https://img.shields.io/badge/Stockfish-18-green)
+
+## Features
+
+- **Engine analysis** — Stockfish 18 runs as a Web Worker (WASM).
+- **Game import** — Load your latest games directly from Chess.com or Lichess by username
+- **Move classification** — Every move is rated: Best, Excellent, Good, Inaccuracy, Mistake, Blunder, Forced, or Opening.
+- **Evaluation graph** — Interactive SVG graph showing advantage swing throughout the game.
+- **Custom moves** — Make your own moves on top of any loaded game to explore alternatives; the engine analyses them in real time
+- **Opening recognition** — Identifies the opening and variation name from a built-in ECO database
+- **Adjustable depth** — Engine search depth is configurable (default 12, up to 20)
+- **Dark/light theme** — System-aware with manual toggle
+- **Responsive** — Works on both desktop and mobile
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| State | Redux Toolkit + redux-persist |
+| Chess logic | chess.js |
+| Board UI | react-chessboard |
+| Engine | Stockfish 18 |
+| UI components | custom & shadcn |
+| Icons | fontawesome |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 20.9+
+- Stockfish 18 WASM engine files in `public/engines/`
+
+The engine files are not included in the repository due to size. Download them from the [Stockfish releases](https://github.com/official-stockfish/Stockfish/releases) and place them at:
+
+```
+public/
+  engines/
+    stockfish-18.js
+    stockfish-18.wasm
+    stockfish-18-single.js
+    stockfish-18-single.wasm
+    stockfish-18-lite.js
+    stockfish-18-lite.wasm
+    stockfish-18-lite-single.js
+    stockfish-18-lite-single.wasm
+    stockfish-18-asm.js        ← fallback for browsers without WASM
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Install and run
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+### Build for production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Third-Party Notices
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for attributions and licenses for icons, the Stockfish engine, and other bundled assets.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

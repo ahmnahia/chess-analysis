@@ -2,6 +2,7 @@
 import React from "react";
 import ThemeToggle from "./components/theme-toggle";
 import SettingsModal from "./components/settings-modal";
+import { ReactSVG } from "react-svg";
 
 export default function Header() {
   return (
@@ -13,6 +14,16 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <SettingsModal />
+          <a
+            href="https://github.com/ahmnahia/chess-analysis"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ReactSVG
+              src="/icons/github.svg"
+              className="[&_svg]:w-8 [&_svg]:fill-zinc-950 [&_svg]:dark:fill-white"
+            />
+          </a>
         </div>
       </div>
     </header>

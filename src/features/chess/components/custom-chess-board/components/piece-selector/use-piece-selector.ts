@@ -79,7 +79,7 @@ export default function usePieceSelector(
       setLayout(null);
       ro.disconnect();
     };
-  }, [promotionPendingToSquare, chessBoardRef, isBoardFlipped]);
+  }, [promotionPendingToSquare, chessBoardRef, isBoardFlipped, color]);
 
   return {
     layout,

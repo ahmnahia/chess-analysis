@@ -4,7 +4,7 @@ import { SIDEBAR_INFO_CLASSES } from "../../constants";
 import { cn } from "@/lib/utils";
 import { MoveButtonProps } from "./types";
 
-export default React.forwardRef<HTMLElement, MoveButtonProps>(
+const MoveButton = React.forwardRef<HTMLElement, MoveButtonProps>(
   ({ pos, isActive, onClick, className, isLatest }, ref) => {
     return (
       <button
@@ -38,3 +38,7 @@ export default React.forwardRef<HTMLElement, MoveButtonProps>(
     );
   },
 );
+
+MoveButton.displayName = "MoveButton";
+
+export default MoveButton;

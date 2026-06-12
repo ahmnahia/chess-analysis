@@ -1,10 +1,11 @@
 import useGraphTooltip from "./use-graph-tooltip";
 import { TIP_FONT_SIZE, TIP_H } from "./constants";
+import { Line } from "../../types";
 
 interface GraphTooltipProps {
   hasHover: boolean;
   lineHoverIdx: number;
-  lines: any;
+  lines: Line[];
   VIEW_W: number;
   equityY: number;
 }
