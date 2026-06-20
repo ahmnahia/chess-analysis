@@ -15,7 +15,7 @@ import {
   setPromotionPending,
 } from "../../chess-slice";
 import { SquareHandlerArgs } from "react-chessboard";
-import { Square, Color } from "chess.js";
+import { Square, Color, KING, WHITE, BLACK } from "chess.js";
 import {
   filterSquareString,
   getCastleSquare,
@@ -24,6 +24,7 @@ import {
   handleMoveClassificationClassNames,
   getRemainingAndCapturedPieces,
   clearAllSquareClassNames,
+  toggleSquareClassName,
 } from "../../utils";
 import { useChessContext } from "../../context/chess-provider";
 import { ChessPosition, PiecesCount, PossibleMoves } from "../../types/chess";
@@ -32,7 +33,8 @@ import {
   TOTAL_COUNT_PIECES,
 } from "./components/game-player-info/constants";
 import "@/lib/bigintToJson";
-import { MoveClassification } from "../../enums";
+import { ChessClassNames, MoveClassification } from "../../enums";
+import { Outcome } from "../user-profile-modal/enum";
 
 export default function useChessBoard() {
   const { chessJs, calculateBestMove } = useChessContext();
@@ -59,6 +61,22 @@ export default function useChessBoard() {
   const prevChessPosition = useRef<ChessPosition | undefined>(undefined);
   const prevIsBoardFlippedRef = useRef<boolean>(isBoardFlipped);
   const chessBoardRef = useRef<HTMLDivElement>(null);
+
+  const getKingSquares = useCallback(() => {
+    const whiteKingSquare = chessJs.findPiece({
+      type: KING,
+      color: WHITE,
+    });
+    const blackKingSquare = chessJs.findPiece({
+      type: KING,
+      color: BLACK,
+    });
+
+    return {
+      whiteKingSquare: whiteKingSquare[0],
+      blackKingSquare: blackKingSquare[0],
+    };
+  }, [chessJs]);
 
   const isBulkAnalysisRunning = useMemo(
     () =>
@@ -209,6 +227,73 @@ export default function useChessBoard() {
 
     return () => clearTimeout(timeout);
   }, [isBoardFlipped, activePosition, possibleMoves, chessJs]);
+
+  useEffect(() => {
+    // handling game end classes
+    [
+      ChessClassNames.GAME_END_LOSER,
+      ChessClassNames.GAME_END_WINNER,
+      ChessClassNames.GAME_END_DRAW,
+    ].forEach((className) => {
+      document.querySelectorAll(`.${className}`).forEach((el) => {
+        const square = el.getAttribute("data-square");
+        if (square) toggleSquareClassName(square, className);
+      });
+    });
+
+    const { whiteKingSquare, blackKingSquare } = getKingSquares();
+    if (!whiteKingSquare || !blackKingSquare) return;
+
+    if (customChessPositions.length > 0) {
+      if (chessJs.isCheckmate()) {
+        const loserColor = chessJs.turn();
+        const winnerColor = loserColor === "w" ? "b" : "w";
+
+        toggleSquareClassName(
+          loserColor === "w" ? whiteKingSquare : blackKingSquare,
+          ChessClassNames.GAME_END_LOSER,
+        );
+        toggleSquareClassName(
+          winnerColor === "w" ? whiteKingSquare : blackKingSquare,
+          ChessClassNames.GAME_END_WINNER,
+        );
+      } else if (chessJs.isDraw() || chessJs.isStalemate()) {
+        toggleSquareClassName(whiteKingSquare, ChessClassNames.GAME_END_DRAW);
+        toggleSquareClassName(blackKingSquare, ChessClassNames.GAME_END_DRAW);
+      }
+    } else if (chessPositions.length > 0) {
+      if (currentChessPositionIdx === chessPositions.length - 1) {
+        if (apiGame?.outcome === Outcome.Draw) {
+          toggleSquareClassName(whiteKingSquare, ChessClassNames.GAME_END_DRAW);
+          toggleSquareClassName(blackKingSquare, ChessClassNames.GAME_END_DRAW);
+          return;
+        }
+
+        const userColor =
+          apiGame?.white.username === apiGame?.searchedUsername ? "w" : "b";
+        toggleSquareClassName(
+          userColor === "w" ? whiteKingSquare : blackKingSquare,
+          apiGame?.outcome === Outcome.Win
+            ? ChessClassNames.GAME_END_WINNER
+            : ChessClassNames.GAME_END_LOSER,
+        );
+        toggleSquareClassName(
+          userColor === "w" ? blackKingSquare : whiteKingSquare,
+          apiGame?.outcome === Outcome.Win
+            ? ChessClassNames.GAME_END_LOSER
+            : ChessClassNames.GAME_END_WINNER,
+        );
+      }
+    }
+  }, [
+    chessJs,
+    getKingSquares,
+    isBoardFlipped,
+    currentChessPositionIdx,
+    chessPositions.length,
+    customChessPositions.length,
+    apiGame,
+  ]);
 
   function finalizeMoveAndAnalyze(
     from: string,

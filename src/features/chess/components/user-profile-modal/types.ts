@@ -1,10 +1,8 @@
 import { ChessComGame, Result } from "../../types/chess-com";
 import { LichessGame, Status } from "../../types/lichess";
-import { Platform } from "./enum";
+import { Platform, Outcome } from "./enum";
 
 export type Game = ChessComGame | LichessGame;
-
-export type Outcome = "win" | "loss" | "draw";
 
 export type GameInfo = {
   white: {
@@ -22,4 +20,5 @@ export type GameInfo = {
   date: string;
   lichessResult?: Status;
   outcome: Outcome;
+  searchedUsername: string;
 };

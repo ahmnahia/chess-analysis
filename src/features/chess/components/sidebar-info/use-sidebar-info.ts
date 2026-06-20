@@ -114,7 +114,7 @@ export default function useSidebarInfo() {
   }, [activePosition]);
 
   useEffect(() => {
-    const isBigScreen = window.innerWidth >= 768;
+    const isBigScreen = window.innerWidth >= 984;
     if (activeRef.current && isBigScreen) {
       activeRef.current.scrollIntoView({
         behavior: "smooth",

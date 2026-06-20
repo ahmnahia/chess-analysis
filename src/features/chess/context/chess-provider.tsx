@@ -40,11 +40,18 @@ export function ChessProvider({ children }: { children: ReactNode }) {
       let stillInOpeningBook = true;
 
       for (let index = 0; index < positions.length; index++) {
-        const fen = positions[index].after;
+        const { before, after: fen } = positions[index];
         if (!fen) continue;
         sanHistory.push(positions[index].san || "");
-        board.load(fen);
-        const legalMovesCount = board.moves().length;
+
+        let legalMovesCount = 0;
+        if (before) {
+          board.load(before);
+          legalMovesCount = board.moves().length;
+        } else {
+          board.load(fen);
+          legalMovesCount = board.moves().length;
+        }
 
         let isOpening = false;
         if (stillInOpeningBook) {

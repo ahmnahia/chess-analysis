@@ -1,4 +1,4 @@
-import type { Outcome } from "./types";
+import { Outcome } from "./enum";
 
 export const GAMES_PREVIEW_LIMIT = 20;
 

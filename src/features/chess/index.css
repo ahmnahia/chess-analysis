@@ -63,3 +63,95 @@ div.move-classification.forced::before {
 div.move-classification.opening::before {
   @apply content-[""] bg-[url('/icons/book-open.svg')] bg-amber-500;
 }
+
+@keyframes game-end-square-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  62% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes game-end-badge {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.82);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+div.game-end-loser {
+  --game-end-color: var(--color-red-600);
+}
+
+div.game-end-winner {
+  --game-end-color: var(--color-green-600);
+}
+
+div.game-end-draw {
+  --game-end-color: var(--color-gray-500);
+}
+
+div.game-end-loser::before,
+div.game-end-winner::before,
+div.game-end-draw::before {
+  @apply absolute -right-4 max-md:-right-2 -top-3 max-md:-top-1 z-30 rounded-full px-3 py-1 text-sm max-lg:text-[10px] max-md:text-[6px] max-md:px-1 font-bold text-white shadow-sm;
+  background-color: var(--game-end-color);
+  animation: game-end-badge 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+div.game-end-loser::before {
+  content: "LOST";
+}
+
+div.game-end-winner::before {
+  content: "WON";
+}
+
+div.game-end-draw::before {
+  content: "DRAW";
+}
+
+div.game-end-loser::after,
+div.game-end-winner::after,
+div.game-end-draw::after {
+  content: "";
+  @apply absolute inset-0 z-20 pointer-events-none;
+  background-color: var(--game-end-color);
+  animation: game-end-square-pulse 2.8s ease-out forwards;
+}
+
+div[data-column="h"].game-end-loser::before,
+div[data-column="h"].game-end-winner::before,
+div[data-column="h"].game-end-draw::before {
+  @apply right-0 max-md:right-0;
+}
+
+.flipped-board div[data-column="h"].game-end-loser::before,
+.flipped-board div[data-column="h"].game-end-winner::before,
+.flipped-board div[data-column="h"].game-end-draw::before {
+  @apply -right-4 max-md:-right-2;
+}
+
+.flipped-board div[data-column="a"].game-end-loser::before,
+.flipped-board div[data-column="a"].game-end-winner::before,
+.flipped-board div[data-column="a"].game-end-draw::before {
+  @apply right-0 max-md:right-0;
+}

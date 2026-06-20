@@ -1,13 +1,12 @@
 import { Color } from "chess.js";
 import { MoveClassification } from "../enums";
-import {
-  ChessBoard,
-  OpeningName,
-  RemainingPieces,
-} from "../types/chess";
+import { ChessBoard, OpeningName, RemainingPieces } from "../types/chess";
 import { EMPTY_PIECE_COUNT } from "../components/custom-chess-board/components/game-player-info/constants";
 import openingNames from "../../../../public/opening-names.json";
-import { ENGINE_DEPTH_MAX, ENGINE_DEPTH_MIN } from "@/components/header/components/settings-modal/constants";
+import {
+  ENGINE_DEPTH_MAX,
+  ENGINE_DEPTH_MIN,
+} from "@/components/header/components/settings-modal/constants";
 
 export const getAdaptiveEngineConfig = () => {
   const nav = navigator as Navigator & { deviceMemory?: number };
@@ -82,11 +81,11 @@ export const getMoveClassification = (
   const normalizedPlayedMove = playedMove.trim().toLowerCase();
   const normalizedBestMove = bestMove.trim().toLowerCase();
 
+  if (legalMovesCount === 1) return MoveClassification.FORCED;
+
   if (normalizedBestMove && normalizedPlayedMove === normalizedBestMove) {
     return MoveClassification.BEST;
   }
-
-  if (legalMovesCount === 1) return MoveClassification.FORCED;
 
   if (currentWhiteShare != null && previousWhiteShare != null) {
     const winPctLoss =
@@ -94,10 +93,8 @@ export const getMoveClassification = (
         ? previousWhiteShare - currentWhiteShare
         : currentWhiteShare - previousWhiteShare) * 100;
 
-    const bothWinning =
-      previousWhiteShare >= 0.9 && currentWhiteShare >= 0.9;
-    const bothLosing =
-      previousWhiteShare <= 0.1 && currentWhiteShare <= 0.1;
+    const bothWinning = previousWhiteShare >= 0.9 && currentWhiteShare >= 0.9;
+    const bothLosing = previousWhiteShare <= 0.1 && currentWhiteShare <= 0.1;
     const isAlreadyDecided = bothWinning || bothLosing;
 
     if (!isAlreadyDecided) {
@@ -141,7 +138,10 @@ export const getRemainingAndCapturedPieces = (
   return remainingPieces;
 };
 
-export const chooseEngine = (hash: number, isWasmSupported: boolean): string => {
+export const chooseEngine = (
+  hash: number,
+  isWasmSupported: boolean,
+): string => {
   if (!isWasmSupported) return "stockfish-18-asm.js";
 
   return hash <= 32 ? "stockfish-18-lite-single.js" : "stockfish-18-single.js";

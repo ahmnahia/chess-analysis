@@ -1,6 +1,7 @@
 import { ChessComGame, Result } from "../../types/chess-com";
 import { LichessGame } from "../../types/lichess";
-import { Game, GameInfo, Outcome } from "./types";
+import { Game, GameInfo } from "./types";
+import { Outcome } from "./enum";
 import { Platform } from "./enum";
 
 export const normalizeUsername = (u: string) => {
@@ -8,7 +9,7 @@ export const normalizeUsername = (u: string) => {
 };
 
 const chessComResultToOutcome = (result: Result): Outcome => {
-  if (result === "win") return "win";
+  if (result === "win") return Outcome.Win;
   if (
     result === "agreed" ||
     result === "repetition" ||
@@ -16,9 +17,9 @@ const chessComResultToOutcome = (result: Result): Outcome => {
     result === "insufficient" ||
     result === "50move"
   ) {
-    return "draw";
+    return Outcome.Draw;
   }
-  return "loss";
+  return Outcome.Loss;
 };
 
 const outcomeChessCom = (
@@ -30,7 +31,7 @@ const outcomeChessCom = (
   const b = normalizeUsername(game.black.username);
   if (q === w) return chessComResultToOutcome(game.white.result);
   if (q === b) return chessComResultToOutcome(game.black.result);
-  return "draw";
+  return Outcome.Draw;
 };
 
 const outcomeLichess = (
@@ -42,11 +43,11 @@ const outcomeLichess = (
   const b = normalizeUsername(game.players.black.user?.name ?? "");
   const userIsWhite = q === w;
   const userIsBlack = q === b;
-  if (!userIsWhite && !userIsBlack) return "draw";
+  if (!userIsWhite && !userIsBlack) return Outcome.Draw;
 
-  if (game.winner == null) return "draw";
-  if (game.winner === "white") return userIsWhite ? "win" : "loss";
-  return userIsBlack ? "win" : "loss";
+  if (game.winner == null) return Outcome.Draw;
+  if (game.winner === "white") return userIsWhite ? Outcome.Win : Outcome.Loss;
+  return userIsBlack ? Outcome.Win : Outcome.Loss;
 };
 
 const toGameInfoFromChessCom = (
@@ -68,6 +69,7 @@ const toGameInfoFromChessCom = (
     pgn: game.pgn,
     date: new Date(game.end_time * 1000).toISOString(),
     outcome: outcomeChessCom(game, searchedUsername),
+    searchedUsername,
   };
 };
 
@@ -89,6 +91,7 @@ const toGameInfoFromLichess = (
     date: new Date(game.lastMoveAt).toISOString(),
     lichessResult: game.status,
     outcome: outcomeLichess(game, searchedUsername),
+    searchedUsername,
   };
 };
 

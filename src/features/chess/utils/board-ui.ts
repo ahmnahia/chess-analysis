@@ -2,7 +2,7 @@ import { Color } from "chess.js";
 import { ChessClassNames, MoveClassification } from "../enums";
 import { PossibleMoves } from "../types/chess";
 
-const toggleSquareClassName = (
+export const toggleSquareClassName = (
   square: string,
   className: ChessClassNames | MoveClassification,
 ) => {

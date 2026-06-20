@@ -1,9 +1,7 @@
-import { ENGINES_PATH } from "@/features/chess/constants";
-
 const CACHE_NAME = "chess-engines";
+const ENGINES_PATH = "/engines";
 
 self.addEventListener("install", () => self.skipWaiting());
-
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
